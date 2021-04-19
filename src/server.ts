@@ -1,27 +1,34 @@
-import express from "express";
-import path from "path";
-import WebSocket from "ws";
+import express from 'express'
+import cors from 'cors'
+import { createGameServer } from './gameServer'
+import generateToken from './generateToken'
 
-const app = express();
+const allowedOrigins = ['http://localhost:3000']
 
-const socketServer = new WebSocket.Server({ port: 3030 });
+const options: cors.CorsOptions = {
+    origin: allowedOrigins,
+}
 
-socketServer.on("connection", (socketClient) => {
-  console.log("connected");
-  console.log("client Set length: ", socketServer.clients.size);
+const app = express()
+app.use(cors(options))
+app.use(express.json())
 
-  socketClient.on("close", (socketClient) => {
-    console.log("closed");
-    console.log("Number of clients: ", socketServer.clients.size);
-  });
-});
+app.get('/', (req, res) => {
+    res.send({ message: 'test' })
+})
 
-app.get("/", (req, res) => {
-  res.send({ message: "test" });
-});
+app.post('/create-game', (req, res) => {
+    const data = createGameServer()
+    res.send(data)
+})
 
-const port = 8765;
+app.get('/token', (req, res) => {
+    const token = generateToken()
+    res.send({ token: token })
+})
+
+const port = 8765
 
 app.listen(port, () => {
-  console.log(`listening http://localhost:${port}`);
-});
+    console.log(`listening http://localhost:${port}`)
+})
