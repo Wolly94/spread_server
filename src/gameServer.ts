@@ -1,5 +1,5 @@
 import WebSocket from 'ws'
-import { exampleSpreadGame, SpreadGame } from './game/spreadGame'
+import { SpreadGame } from './game/spreadGame'
 import generateToken from './generateToken'
 
 interface CreateSocketResponse {
@@ -24,7 +24,7 @@ class SpreadGameServer {
         const port = nextPort()
         this.socket = new WebSocket.Server({ port: port })
         this.url = 'ws://localhost:' + port.toString() + '/'
-        this.gameState = exampleSpreadGame
+        this.gameState = new SpreadGame()
         this.intervalId = null
     }
 
@@ -47,13 +47,12 @@ class SpreadGameServer {
     }
 
     updateClientGameState() {
-        var message = this.gameState.toString()
+        var message = this.gameState.stringify()
         this.sendMessageToClients(message)
     }
 
     start() {
         const ms = 1000
-        this.gameState.start(1000)
         this.intervalId = setInterval(() => {
             this.gameState.step(ms)
             this.updateClientGameState()
@@ -63,6 +62,8 @@ class SpreadGameServer {
 
     onReceiveMessage(client: WebSocket, message: string) {
         const x = message
+        // TODO decode token as above
+        const token = ''
         console.log('message received: ' + message)
     }
 
