@@ -9,7 +9,7 @@ export interface ClientCell {
     id: number
     units: number
     position: [number, number]
-    playerId: number
+    playerId: number | null
     radius: number
 }
 

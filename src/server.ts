@@ -9,17 +9,6 @@ const options: cors.CorsOptions = {
     origin: allowedOrigins,
 }
 
-interface MyInterface {
-    id: number
-}
-
-const l: MyInterface[] = [{ id: 1 }, { id: 2 }]
-const newL = l.filter((n) => {
-    n.id *= 2
-    return true
-})
-console.log(newL)
-
 const app = express()
 app.use(cors(options))
 app.use(express.json())

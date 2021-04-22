@@ -1,4 +1,5 @@
 import WebSocket from 'ws'
+import { exampleMap } from './game/map'
 import { SpreadGame } from './game/spreadGame'
 import generateToken from './generateToken'
 
@@ -19,13 +20,16 @@ class SpreadGameServer {
     url: string
     gameState: SpreadGame
     intervalId: NodeJS.Timeout | null
+    playerTokens: string[]
 
+    // later allow connecting other players and read data like skills accordingly
     constructor(socketId: string) {
         const port = nextPort()
         this.socket = new WebSocket.Server({ port: port })
         this.url = 'ws://localhost:' + port.toString() + '/'
-        this.gameState = new SpreadGame()
+        this.gameState = new SpreadGame(exampleMap(), [{ id: 1 }, { id: 0 }])
         this.intervalId = null
+        this.playerTokens = []
     }
 
     // socket now accepts connections from clients
@@ -68,7 +72,7 @@ class SpreadGameServer {
     }
 
     onConnect(client: WebSocket) {
-        console.log('connected')
+        console.log('connected with url: ', client.url)
         console.log('client Set length: ', this.socket.clients.size)
 
         // gets fired when server receives message from client
@@ -88,8 +92,6 @@ class SpreadGameServer {
         console.log('Number of clients: ', this.socket.clients.size)
     }
 }
-
-export const startServer = (serverId: string) => {}
 
 export const createGameServer = () => {
     const socketId = generateToken()

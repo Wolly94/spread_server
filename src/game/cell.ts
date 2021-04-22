@@ -1,21 +1,30 @@
 import Bubble from './bubble'
 
-export class Cell {
+var idCounter = 0
+
+class Cell {
     id: number
-    playerId: number
+    playerId: number | null
     position: [number, number]
     radius: number
     units: number
     growthPerSecond: number
-    constructor() {
-        this.id = 1
-        this.playerId = 1
-        this.position = [100, 200]
-        this.units = 100.0
-        this.radius = 50.0
+    constructor(
+        playerId: number,
+        position: [number, number],
+        units: number,
+        radius: number,
+    ) {
+        idCounter += 1
+        this.id = idCounter
+        this.playerId = playerId
+        this.position = position
+        this.units = units
+        this.radius = radius
         this.growthPerSecond = 1.0
     }
-    send(target: Cell): Bubble {
+    trySend(target: Cell): Bubble | null {
+        if (this.playerId == null) return null
         const attacker = Math.floor(this.units / 2)
         this.units -= attacker
         const bubble = new Bubble(
@@ -44,3 +53,5 @@ export class Cell {
         this.units += (this.growthPerSecond * ms) / 1000.0
     }
 }
+
+export default Cell

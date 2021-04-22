@@ -1,4 +1,4 @@
-import { Cell } from './cell'
+import Cell from './cell'
 
 export default class Bubble {
     id: number
@@ -25,11 +25,20 @@ export default class Bubble {
         this.motherId = motherId
         this.speed = 50
     }
+    // return [this did survive?, remainingEnemy]
     collide(enemy: Bubble): [boolean, Bubble | null] {
         // TODO modify 'this' accordingly
         // return
-        const survived = true
-        return [survived, enemy]
+        const result = this.units - enemy.units
+        if (result == 0) {
+            return [false, null]
+        } else if (result > 0) {
+            this.units = result
+            return [true, null]
+        } else {
+            enemy.units = -result
+            return [false, enemy]
+        }
     }
     overlaps(other: Bubble | Cell) {
         return (
