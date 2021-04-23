@@ -2,6 +2,8 @@ import WebSocket from 'ws'
 import { exampleMap } from './game/map'
 import { SpreadGame } from './game/spreadGame'
 import generateToken from './generateToken'
+import ClientMessage from './shared/clientMessages'
+import ServerMessage from './shared/serverMessages'
 
 interface CreateSocketResponse {
     url: string
@@ -20,7 +22,8 @@ class SpreadGameServer {
     url: string
     gameState: SpreadGame
     intervalId: NodeJS.Timeout | null
-    playerTokens: string[]
+    playerTokens: Map<string, number>
+    latestPlayerId: number
 
     // later allow connecting other players and read data like skills accordingly
     constructor(socketId: string) {
@@ -29,7 +32,14 @@ class SpreadGameServer {
         this.url = 'ws://localhost:' + port.toString() + '/'
         this.gameState = new SpreadGame(exampleMap(), [{ id: 1 }, { id: 0 }])
         this.intervalId = null
-        this.playerTokens = []
+        this.latestPlayerId = -1
+        this.playerTokens = new Map()
+    }
+
+    getPlayerIdFromToken(token: string) {
+        const playerId = this.playerTokens.get(token)
+        if (playerId == undefined) return null
+        else return playerId
     }
 
     // socket now accepts connections from clients
@@ -37,8 +47,9 @@ class SpreadGameServer {
         this.socket.on('connection', (socketClient, req) => {
             const url = req.url
             const token = req.url?.replace('/?token=', '')
-            // TODO validate token
-            this.onConnect(socketClient)
+            if (token != undefined) {
+                this.onConnect(socketClient, token)
+            }
         })
     }
 
@@ -51,27 +62,43 @@ class SpreadGameServer {
     }
 
     updateClientGameState() {
-        var message = this.gameState.stringify()
-        this.sendMessageToClients(message)
+        const data = this.gameState.toClientGameState()
+        const message: ServerMessage = {
+            type: 'gamestate',
+            data: this.gameState,
+        }
+        this.sendMessageToClients(JSON.stringify(message))
     }
 
     start() {
-        const ms = 1000
+        const ms = 50
         this.intervalId = setInterval(() => {
             this.gameState.step(ms)
             this.updateClientGameState()
-        }, 1000)
+        }, ms)
         //clearInterval(this.intervalId)
     }
 
     onReceiveMessage(client: WebSocket, message: string) {
-        const x = message
-        // TODO decode token as above
-        const token = ''
-        console.log('message received: ' + message)
+        const clientMessage: ClientMessage = JSON.parse(message)
+        const playerId = this.getPlayerIdFromToken(clientMessage.token)
+        if (playerId != null) {
+            if (clientMessage.data.type == 'sendunits') {
+                const value = clientMessage.data.data
+                this.gameState.sendUnits(
+                    playerId,
+                    value.senderIds,
+                    value.receiverId,
+                )
+                console.log('message received and attack sent: ' + message)
+            }
+        }
     }
 
-    onConnect(client: WebSocket) {
+    onConnect(client: WebSocket, token: string) {
+        this.latestPlayerId += 1
+        this.playerTokens.set(token, this.latestPlayerId)
+
         console.log('connected with url: ', client.url)
         console.log('client Set length: ', this.socket.clients.size)
 
@@ -98,7 +125,6 @@ export const createGameServer = () => {
     const gameServer = new SpreadGameServer(socketId)
     gameServer.open()
     gameServer.start()
-    //const gameServer = setupServer(socketId)
     runningGameServers.push(gameServer)
     const resp: CreateSocketResponse = {
         url: gameServer.url,

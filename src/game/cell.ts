@@ -27,17 +27,32 @@ class Cell {
         if (this.playerId == null) return null
         const attacker = Math.floor(this.units / 2)
         this.units -= attacker
+        var direction = [
+            target.position[0] - this.position[0],
+            target.position[1] - this.position[1],
+        ]
+        const dist = Math.sqrt(direction[0] ** 2 + direction[1] ** 2)
+        if (dist === 0) return null
+        const lambda = this.radius / dist
+        const normedDirection: [number, number] = [
+            direction[0] / dist,
+            direction[1] / dist,
+        ]
+        const position: [number, number] = [
+            this.position[0] + lambda * direction[0],
+            this.position[1] + lambda * direction[1],
+        ]
         const bubble = new Bubble(
             this.playerId,
-            this.position,
-            [1.0, 0.0],
+            position,
+            normedDirection,
             attacker,
             this.id,
         )
         return bubble
     }
-    consume(other: Bubble) {
-        if (this.playerId == other.playerId) {
+    collide(other: Bubble): Bubble | null {
+        if (this.playerId === other.playerId) {
             this.units += other.units
         } else {
             const result = this.units - other.units
@@ -48,6 +63,7 @@ class Cell {
                 this.playerId = other.playerId
             }
         }
+        return null
     }
     grow(ms: number) {
         this.units += (this.growthPerSecond * ms) / 1000.0

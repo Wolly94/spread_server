@@ -1,6 +1,6 @@
 import Bubble from './bubble'
 import Cell from './cell'
-import { ClientGameState } from './clientState'
+import { ClientGameState } from '../shared/clientState'
 import { Map } from './map'
 import Player from './player'
 
@@ -46,20 +46,24 @@ export class SpreadGame {
         this.bubbles = remainingBubbles
     }
     collideBubblesWithCells() {
-        // run through (bubble, cell)
-        // only keep bubbles that were not consumed
-        this.bubbles.filter((bubble) => {
+        var remainingBubbles: Bubble[] = []
+        this.bubbles.forEach((bubble) => {
+            var currentBubble: Bubble | null = bubble
             this.cells.forEach((cell) => {
-                if (!bubble.overlaps(cell)) return true
                 if (
-                    bubble.motherId == cell.id &&
-                    bubble.playerId == cell.playerId
-                )
-                    return true
-                cell.consume(bubble)
-                return false
+                    currentBubble != null &&
+                    currentBubble.overlaps(cell) &&
+                    (currentBubble.motherId !== cell.id ||
+                        currentBubble.playerId !== cell.playerId)
+                ) {
+                    currentBubble = cell.collide(currentBubble)
+                }
             })
+            if (currentBubble != null) {
+                remainingBubbles.push(currentBubble)
+            }
         })
+        this.bubbles = remainingBubbles
     }
     sendUnits(playerId: number, senderIds: number[], receiverId: number) {
         const player = this.players.find((p) => p.id == playerId)
@@ -78,7 +82,7 @@ export class SpreadGame {
             if (bubble != null) this.bubbles.push(bubble)
         })
     }
-    stringify() {
+    toClientGameState() {
         const gs: ClientGameState = {
             cells: this.cells.map((cell) => {
                 return {
@@ -99,6 +103,6 @@ export class SpreadGame {
                 }
             }),
         }
-        return JSON.stringify(gs)
+        return gs
     }
 }
