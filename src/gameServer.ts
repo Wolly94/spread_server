@@ -79,7 +79,7 @@ class SpreadGameServer {
         //clearInterval(this.intervalId)
     }
 
-    onReceiveMessage(client: WebSocket, message: string) {
+    onReceiveMessage(client: WebSocket, message: string, token: string) {
         const clientMessage: ClientMessage = JSON.parse(message)
         const playerId = this.getPlayerIdFromToken(clientMessage.token)
         if (playerId != null) {
@@ -105,7 +105,7 @@ class SpreadGameServer {
         // gets fired when server receives message from client
         client.on('message', (message) => {
             const url = client.url
-            this.onReceiveMessage(client, message.valueOf().toString())
+            this.onReceiveMessage(client, message.valueOf().toString(), token)
         })
 
         // gets fired on close
