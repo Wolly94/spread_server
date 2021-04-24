@@ -1,6 +1,6 @@
+import { ClientGameState } from '../shared/inGame/clientGameState'
 import Bubble from './bubble'
 import Cell from './cell'
-import { ClientGameState } from '../shared/clientState'
 import { Map } from './map'
 import Player from './player'
 

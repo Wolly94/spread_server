@@ -1,4 +1,4 @@
-import { ClientGameState } from './clientState'
+import { ClientGameState } from './clientGameState'
 
 export interface GameStateMessage {
     type: 'gamestate'
@@ -10,6 +10,6 @@ export interface GameOverMessage {
     data: null
 }
 
-type ServerMessage = GameStateMessage | GameOverMessage
+type GameServerMessage = GameStateMessage | GameOverMessage
 
-export default ServerMessage
+export default GameServerMessage

@@ -8,11 +8,6 @@ export interface SendUnitsMessage {
     data: SendUnits
 }
 
-export type ClientMessageData = SendUnitsMessage
+type GameClientMessageData = SendUnitsMessage
 
-type ClientMessage = {
-    data: ClientMessageData
-    token: string
-}
-
-export default ClientMessage
+export default GameClientMessageData

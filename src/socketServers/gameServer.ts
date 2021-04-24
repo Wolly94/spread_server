@@ -1,8 +1,9 @@
 import WebSocket from 'ws'
 import { exampleMap } from '../game/map'
 import { SpreadGame } from '../game/spreadGame'
-import ClientMessage from '../shared/clientMessages'
-import ServerMessage from '../shared/serverMessages'
+import ClientMessage from '../shared/clientMessage'
+import GameClientMessageData from '../shared/inGame/gameClientMessages'
+import GameServerMessage from '../shared/inGame/gameServerMessages'
 import SocketServer from './socketServer'
 
 interface CreateSocketResponse {
@@ -17,7 +18,10 @@ const nextPort = () => {
     return currentPort
 }
 
-class SpreadGameServer extends SocketServer<ServerMessage, ClientMessage> {
+class SpreadGameServer extends SocketServer<
+    GameServerMessage,
+    ClientMessage<GameClientMessageData>
+> {
     gameState: SpreadGame
     intervalId: NodeJS.Timeout | null
     playerTokens: Map<string, number>
@@ -40,7 +44,7 @@ class SpreadGameServer extends SocketServer<ServerMessage, ClientMessage> {
 
     updateClientGameState() {
         const data = this.gameState.toClientGameState()
-        const message: ServerMessage = {
+        const message: GameServerMessage = {
             type: 'gamestate',
             data: this.gameState,
         }
@@ -56,7 +60,11 @@ class SpreadGameServer extends SocketServer<ServerMessage, ClientMessage> {
         //clearInterval(this.intervalId)
     }
 
-    onReceiveMessage(client: WebSocket, message: ClientMessage, token: string) {
+    onReceiveMessage(
+        client: WebSocket,
+        message: ClientMessage<GameClientMessageData>,
+        token: string,
+    ) {
         const playerId = this.getPlayerIdFromToken(message.token)
         if (playerId != null) {
             if (message.data.type == 'sendunits') {
