@@ -29,6 +29,9 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
                     }
                     this.tokenClients.set(token, socketClient)
                 }
+                this.onConnect(socketClient, token)
+                console.log('connected with url: ', req.url)
+                console.log('client Set length: ', this.socket.clients.size)
                 // gets fired when server receives message from client
                 socketClient.on('message', (message) => {
                     const m: TReceiverMessage = JSON.parse(
@@ -38,9 +41,11 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
                 })
                 // gets fired on close
                 socketClient.on('close', () => {
-                    this.onDisconnect(socketClient)
+                    this.onDisconnect(socketClient, token)
+                    this.tokenClients.delete(token)
+                    console.log('closed')
+                    console.log('Number of clients: ', this.socket.clients.size)
                 })
-                this.onConnect(socketClient, token)
             } else {
                 socketClient.close()
             }
@@ -62,17 +67,9 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
         token: string,
     ): void
 
-    onConnect(client: WebSocket, token: string) {
-        //this.latestPlayerId += 1
-        //this.playerTokens.set(token, this.latestPlayerId)
-        console.log('connected with url: ', client.url)
-        console.log('client Set length: ', this.socket.clients.size)
-    }
+    abstract onConnect(client: WebSocket, token: string): void
 
-    onDisconnect(client: WebSocket) {
-        console.log('closed')
-        console.log('Number of clients: ', this.socket.clients.size)
-    }
+    abstract onDisconnect(client: WebSocket, token: string): void
 }
 
 export default SocketServer

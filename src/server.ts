@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
-import { createGameServer } from './gameServer'
 import generateToken from './generateToken'
+import { createGameServer } from './socketServers/creator'
 
 const allowedOrigins = ['http://localhost:3000']
 

@@ -70,6 +70,13 @@ class SpreadGameServer extends SocketServer<ServerMessage, ClientMessage> {
             }
         }
     }
+    onConnect(client: WebSocket, token: string) {
+        this.latestPlayerId += 1
+        this.playerTokens.set(token, this.latestPlayerId)
+    }
+    onDisconnect(client: WebSocket, token: string) {
+        this.playerTokens.delete(token)
+    }
 }
 
 export default SpreadGameServer
