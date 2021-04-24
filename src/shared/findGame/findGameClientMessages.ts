@@ -1,10 +1,10 @@
-export interface JoinGameMessage {
+export interface JoinGameMessageData {
     type: 'joingame'
     data: {
         gameId: number
     }
 }
 
-type FindGameClientMessage = JoinGameMessage
+type FindGameClientMessageData = JoinGameMessageData
 
-export default FindGameClientMessage
+export default FindGameClientMessageData
