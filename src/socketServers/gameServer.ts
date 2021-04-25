@@ -1,6 +1,6 @@
 import WebSocket from 'ws'
-import { exampleMap } from '../game/map'
-import { SpreadGame } from '../game/spreadGame'
+import { exampleMap } from '../shared/game/map'
+import { SpreadGame } from '../shared/game/spreadGame'
 import ClientMessage from '../shared/clientMessage'
 import { OpenGame } from '../shared/findGame/findGameServerMessages'
 import GameClientMessageData from '../shared/inGame/gameClientMessages'
