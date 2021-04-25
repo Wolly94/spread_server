@@ -1,4 +1,5 @@
-import SpreadGameServer, { runningGameServers } from './gameServer'
+import FindGameServerHandler from './findGameServerHandler'
+import GameServerHandler from './gameServerHandler'
 
 let currentPort = 3030
 
@@ -7,18 +8,14 @@ const nextPort = () => {
     return currentPort
 }
 
-export interface CreateSocketResponse {
-    url: string
-}
-
 export const createGameServer = () => {
     const port = nextPort()
-    const gameServer = new SpreadGameServer(port)
-    gameServer.open()
-    gameServer.start()
-    runningGameServers.push(gameServer)
-    const resp: CreateSocketResponse = {
-        url: gameServer.url,
-    }
-    return resp
+    const result = GameServerHandler.createGameServer(port)
+    return result
+}
+
+export const createFindGameServer = () => {
+    const port = nextPort()
+    const result = FindGameServerHandler.createFindGameServer(port)
+    return result
 }

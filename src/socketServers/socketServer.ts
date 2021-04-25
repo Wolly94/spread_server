@@ -70,6 +70,13 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
     abstract onConnect(client: WebSocket, token: string): void
 
     abstract onDisconnect(client: WebSocket, token: string): void
+
+    creationResponse() {
+        const resp: CreateSocketResponse = {
+            url: this.url,
+        }
+        return resp
+    }
 }
 
 export default SocketServer

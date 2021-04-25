@@ -1,7 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import generateToken from './generateToken'
-import { createGameServer } from './socketServers/creator'
+import { createFindGameServer, createGameServer } from './socketServers/creator'
+import FindGameServerHandler from './socketServers/findGameServerHandler'
 
 const allowedOrigins = ['http://localhost:3000']
 
@@ -20,6 +21,10 @@ app.get('/', (req, res) => {
 app.post('/create-game', (req, res) => {
     const data = createGameServer()
     res.send(data)
+})
+app.get('/find-game', (req, res) => {
+    if (FindGameServerHandler.findGameServer == null) createFindGameServer()
+    const data = FindGameServerHandler.getUrlResponse()
 })
 
 app.get('/token', (req, res) => {

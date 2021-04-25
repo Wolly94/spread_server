@@ -1,5 +1,5 @@
 export interface OpenGame {
-    gameId: number
+    url: string
     players: number
     joinedPlayers: number
     running: boolean

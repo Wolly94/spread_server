@@ -2,21 +2,11 @@ import WebSocket from 'ws'
 import { exampleMap } from '../game/map'
 import { SpreadGame } from '../game/spreadGame'
 import ClientMessage from '../shared/clientMessage'
+import { OpenGame } from '../shared/findGame/findGameServerMessages'
 import GameClientMessageData from '../shared/inGame/gameClientMessages'
 import GameServerMessage from '../shared/inGame/gameServerMessages'
+import FindGameServerHandler from './findGameServerHandler'
 import SocketServer from './socketServer'
-
-interface CreateSocketResponse {
-    url: string
-}
-
-export let runningGameServers: SpreadGameServer[] = []
-let currentPort = 3030
-
-const nextPort = () => {
-    currentPort += 1
-    return currentPort
-}
 
 class SpreadGameServer extends SocketServer<
     GameServerMessage,
@@ -57,6 +47,7 @@ class SpreadGameServer extends SocketServer<
             this.gameState.step(ms)
             this.updateClientGameState()
         }, ms)
+        FindGameServerHandler.findGameServer?.updateClients()
         //clearInterval(this.intervalId)
     }
 
@@ -84,6 +75,16 @@ class SpreadGameServer extends SocketServer<
     }
     onDisconnect(client: WebSocket, token: string) {
         this.playerTokens.delete(token)
+    }
+
+    toOpenGame() {
+        const res: OpenGame = {
+            url: this.url,
+            joinedPlayers: this.socket.clients.size,
+            players: this.socket.clients.size,
+            running: this.intervalId != null,
+        }
+        return res
     }
 }
 
