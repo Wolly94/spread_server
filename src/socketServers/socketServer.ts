@@ -1,8 +1,5 @@
 import WebSocket from 'ws'
-
-interface CreateSocketResponse {
-    url: string
-}
+import UrlResponse from '../shared/general/urlResponse'
 
 abstract class SocketServer<TSenderMessage, TReceiverMessage> {
     socket: WebSocket.Server
@@ -61,6 +58,13 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
         })
     }
 
+    sendMessageToClient(client: WebSocket, message: TSenderMessage) {
+        const json = JSON.stringify(message)
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(json)
+        }
+    }
+
     abstract onReceiveMessage(
         client: WebSocket,
         message: TReceiverMessage,
@@ -72,7 +76,7 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
     abstract onDisconnect(client: WebSocket, token: string): void
 
     creationResponse() {
-        const resp: CreateSocketResponse = {
+        const resp: UrlResponse = {
             url: this.url,
         }
         return resp

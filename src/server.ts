@@ -25,6 +25,7 @@ app.post('/create-game', (req, res) => {
 app.get('/find-game', (req, res) => {
     if (FindGameServerHandler.findGameServer == null) createFindGameServer()
     const data = FindGameServerHandler.getUrlResponse()
+    res.send(data)
 })
 
 app.get('/token', (req, res) => {

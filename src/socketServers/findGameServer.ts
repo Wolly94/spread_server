@@ -13,6 +13,9 @@ class FindGameServer extends SocketServer<
     ClientMessage<FindGameClientMessageData>
 > {
     updateClients() {
+        this.sendMessageToClients(this.getUpdateMessage())
+    }
+    getUpdateMessage() {
         const openGames = GameServerHandler.getGameServers().map(
             (gameServer, index) => {
                 const result: OpenGame = gameServer.toOpenGame()
@@ -23,9 +26,11 @@ class FindGameServer extends SocketServer<
             type: 'opengames',
             data: openGames,
         }
-        this.sendMessageToClients(message)
+        return message
     }
-    onConnect(client: WebSocket, token: string) {}
+    onConnect(client: WebSocket, token: string) {
+        this.sendMessageToClient(client, this.getUpdateMessage())
+    }
     onDisconnect(client: WebSocket, token: string) {}
     onReceiveMessage(
         client: WebSocket,

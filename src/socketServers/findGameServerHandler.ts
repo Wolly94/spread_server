@@ -11,6 +11,7 @@ class FindGameServerHandler {
     }
     static createFindGameServer = (port: number) => {
         const findGameServer = new FindGameServer(port)
+        findGameServer.open()
         FindGameServerHandler.findGameServer = findGameServer
         return findGameServer.creationResponse()
     }
