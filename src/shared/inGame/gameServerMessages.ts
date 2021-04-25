@@ -5,11 +5,18 @@ export interface GameStateMessage {
     data: ClientGameState
 }
 
+export interface SetPlayerIdMessage {
+    type: 'playerid'
+    data: {
+        playerId: number
+    }
+}
+
 export interface GameOverMessage {
     type: 'gameover'
     data: null
 }
 
-type GameServerMessage = GameStateMessage | GameOverMessage
+type GameServerMessage = GameStateMessage | SetPlayerIdMessage | GameOverMessage
 
 export default GameServerMessage
