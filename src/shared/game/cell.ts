@@ -1,7 +1,5 @@
 import Bubble from './bubble'
 
-var idCounter = 0
-
 class Cell {
     id: number
     playerId: number | null
@@ -10,13 +8,13 @@ class Cell {
     units: number
     growthPerSecond: number
     constructor(
-        playerId: number,
+        id: number,
+        playerId: number | null,
         position: [number, number],
         units: number,
         radius: number,
     ) {
-        idCounter += 1
-        this.id = idCounter
+        this.id = id
         this.playerId = playerId
         this.position = position
         this.units = units

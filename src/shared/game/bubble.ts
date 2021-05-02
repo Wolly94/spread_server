@@ -30,7 +30,7 @@ export default class Bubble {
         // TODO modify 'this' accordingly
         // return
         const result = this.units - enemy.units
-        if (result == 0) {
+        if (result === 0) {
             return [false, null]
         } else if (result > 0) {
             this.units = result
