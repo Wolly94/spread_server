@@ -1,5 +1,5 @@
 import WebSocket from 'ws'
-import { exampleMap } from '../shared/game/map'
+import { exampleMap, SpreadMap } from '../shared/game/map'
 import { SpreadGame } from '../shared/game/spreadGame'
 import ClientMessage from '../shared/clientMessage'
 import { OpenGame } from '../shared/findGame/findGameServerMessages'
@@ -10,34 +10,38 @@ import GameServerMessage, {
 import FindGameServerHandler from './findGameServerHandler'
 import SocketServer from './socketServer'
 
+interface ConnectedPlayer {
+    token: string
+    socket: WebSocket
+    playerId: number | null
+}
+
 class SpreadGameServer extends SocketServer<
     GameServerMessage,
     ClientMessage<GameClientMessageData>
 > {
-    gameState: SpreadGame
+    gameState: SpreadGame | null
     intervalId: NodeJS.Timeout | null
     playerTokens: Set<string>
-    latestPlayerId: number
-    activePlayers: string[] // storing the player token at the id of the player
+    connectedPlayers: ConnectedPlayer[]
 
     // later allow connecting other players and read data like skills accordingly
     constructor(port: number) {
         super(port)
-        const map = exampleMap()
-        this.gameState = new SpreadGame(exampleMap(), [{ id: 1 }, { id: 0 }])
+        this.gameState = null
         this.intervalId = null
-        this.latestPlayerId = -1
         this.playerTokens = new Set()
-        this.activePlayers = new Array<string>(map.players)
+        this.connectedPlayers = []
     }
 
     getPlayerIdFromToken(token: string) {
-        const playerId = this.activePlayers.findIndex((to) => to === token)
-        if (playerId == undefined) return null
-        else return playerId
+        const player = this.connectedPlayers.find((cp) => cp.token === token)
+        if (player !== undefined) return player.playerId
+        else return null
     }
 
     updateClientGameState() {
+        if (this.gameState === null) return
         const data = this.gameState.toClientGameState()
         const message: GameServerMessage = {
             type: 'gamestate',
@@ -46,11 +50,43 @@ class SpreadGameServer extends SocketServer<
         this.sendMessageToClients(message)
     }
 
+    setMap(map: SpreadMap) {
+        if (this.intervalId !== null) {
+            return
+        }
+        this.gameState = new SpreadGame(map)
+        let remSeats = this.remainingSeats()
+        while (remSeats.length > 0) {
+            const index = this.connectedPlayers.findIndex(
+                (cp) => cp.playerId === null,
+            )
+            if (index < 0) return
+            const playerId = remSeats[0]
+            this.connectedPlayers[index].playerId = playerId
+            const message: SetPlayerIdMessage = {
+                type: 'playerid',
+                data: {
+                    playerId: playerId,
+                },
+            }
+            this.sendMessageToClient(
+                this.connectedPlayers[index].socket,
+                message,
+            )
+
+            remSeats = this.remainingSeats()
+        }
+        FindGameServerHandler.findGameServer?.updateClients()
+    }
+
     start() {
+        if (this.gameState === null) return
         const ms = 50
         this.intervalId = setInterval(() => {
-            this.gameState.step(ms)
-            this.updateClientGameState()
+            if (this.gameState !== null) {
+                this.gameState.step(ms)
+                this.updateClientGameState()
+            }
         }, ms)
         FindGameServerHandler.findGameServer?.updateClients()
         //clearInterval(this.intervalId)
@@ -61,9 +97,9 @@ class SpreadGameServer extends SocketServer<
         message: ClientMessage<GameClientMessageData>,
         token: string,
     ) {
-        const playerId = this.getPlayerIdFromToken(message.token)
-        if (playerId != null) {
-            if (message.data.type == 'sendunits') {
+        if (message.data.type === 'sendunits' && this.gameState !== null) {
+            const playerId = this.getPlayerIdFromToken(message.token)
+            if (playerId != null) {
                 const value = message.data.data
                 this.gameState.sendUnits(
                     playerId,
@@ -72,35 +108,50 @@ class SpreadGameServer extends SocketServer<
                 )
                 console.log('message received and attack sent: ' + message)
             }
+        } else if (message.data.type === 'setmap') {
+            const value = message.data.data
+            this.setMap(value)
+            console.log('map successfully set')
+        } else if (message.data.type === 'startgame') {
+            this.start()
+            console.log('game started')
         }
     }
+    remainingSeats() {
+        if (this.gameState === null) return []
+        let occSeats = new Set(
+            this.connectedPlayers.map((cp) =>
+                cp.playerId === null ? -1 : cp.playerId,
+            ),
+        )
+        occSeats.delete(-1)
+        const seats = this.gameState.players.map((p) => p.id)
+        const remainingSeats = seats.filter((id) => !occSeats.has(id))
+        return remainingSeats.sort((a, b) => a - b)
+    }
     onConnect(client: WebSocket, token: string) {
-        let existing = this.activePlayers.findIndex((to) => to === token)
-        if (existing === -1) {
-            this.playerTokens.add(token)
-            // find empty seat
-            let found = false
-            let i = 0
-            while (!found && i < this.activePlayers.length) {
-                if (this.activePlayers[i] == undefined) {
-                    found = true
-                } else {
-                    i += 1
+        const index = this.connectedPlayers.findIndex(
+            (cp) => cp.token === token,
+        )
+        if (index < 0) {
+            const remSeats = this.remainingSeats()
+            const playerId = remSeats.length === 0 ? null : remSeats[0]
+            this.connectedPlayers.push({
+                token: token,
+                socket: client,
+                playerId: playerId,
+            })
+            if (playerId !== null) {
+                const message: SetPlayerIdMessage = {
+                    type: 'playerid',
+                    data: {
+                        playerId: playerId,
+                    },
                 }
+                this.sendMessageToClient(client, message)
             }
-            if (i < this.activePlayers.length) {
-                this.activePlayers[i] = token
-                existing = i
-            }
-        }
-        if (existing < this.activePlayers.length) {
-            const message: SetPlayerIdMessage = {
-                type: 'playerid',
-                data: {
-                    playerId: existing,
-                },
-            }
-            this.sendMessageToClient(client, message)
+        } else {
+            this.connectedPlayers[index].socket = client
         }
     }
     onDisconnect(client: WebSocket, token: string) {
@@ -108,11 +159,13 @@ class SpreadGameServer extends SocketServer<
     }
 
     toOpenGame() {
+        const remSeats = this.remainingSeats().length
+        const allSeats =
+            this.gameState === null ? 0 : this.gameState.players.length
         const res: OpenGame = {
             url: this.url,
-            joinedPlayers: this.activePlayers.filter((p) => p != undefined)
-                .length,
-            players: this.activePlayers.length,
+            joinedPlayers: allSeats - remSeats,
+            players: allSeats,
             running: this.intervalId != null,
         }
         return res

@@ -1,3 +1,5 @@
+import { SpreadMap } from '../game/map'
+
 export interface SendUnits {
     senderIds: number[]
     receiverId: number
@@ -8,6 +10,16 @@ export interface SendUnitsMessage {
     data: SendUnits
 }
 
-type GameClientMessageData = SendUnitsMessage
+export interface SetMapMessage {
+    type: 'setmap'
+    data: SpreadMap
+}
+
+export interface StartGameMessage {
+    type: 'startgame'
+    data: {}
+}
+
+type GameClientMessageData = SendUnitsMessage | SetMapMessage | StartGameMessage
 
 export default GameClientMessageData

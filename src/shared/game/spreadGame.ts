@@ -1,7 +1,7 @@
 import { ClientGameState } from '../inGame/clientGameState'
 import Bubble from './bubble'
 import Cell from './cell'
-import { SpreadMap } from './map'
+import { getPlayerIds, SpreadMap } from './map'
 import Player from './player'
 
 export class SpreadGame {
@@ -9,7 +9,8 @@ export class SpreadGame {
     bubbles: Bubble[]
     players: Player[]
 
-    constructor(map: SpreadMap, players: Player[]) {
+    constructor(map: SpreadMap) {
+        const players = getPlayerIds(map)
         this.cells = map.cells.map((mapCell) => {
             const cell: Cell = new Cell(
                 mapCell.id,
@@ -21,12 +22,16 @@ export class SpreadGame {
             return cell
         })
         this.bubbles = []
-        this.players = players
+        this.players = Array.from(players).map((id) => {
+            return { id: id }
+        })
     }
 
     step(ms: number) {
         this.bubbles.forEach((bubble) => bubble.move(ms))
-        this.cells.forEach((cell) => cell.grow(ms))
+        this.cells.forEach((cell) => {
+            if (cell.playerId !== null) cell.grow(ms)
+        })
         this.collideBubblesWithCells()
         this.collideBubblesWithBubbles()
     }
