@@ -23,7 +23,7 @@ interface InGameFunctions {
 export type InGame = InGameState & InGameFunctions
 
 class InGameImplementation implements InGame {
-    type: 'ingame'
+    type: 'ingame' = 'ingame'
     map: SpreadMap
     seatedPlayers: SeatedPlayer[]
     gameState: SpreadGame

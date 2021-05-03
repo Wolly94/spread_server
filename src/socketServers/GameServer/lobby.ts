@@ -32,7 +32,7 @@ interface LobbyFunctions {
 export type Lobby = LobbyState & LobbyFunctions
 
 class LobbyImplementation implements Lobby {
-    type: 'lobby'
+    type: 'lobby' = 'lobby'
     map: SpreadMap | null
     seatedPlayers: SeatedPlayer[]
     sendMessageToClientViaToken: (
@@ -58,6 +58,8 @@ class LobbyImplementation implements Lobby {
         if (message.type === 'setmap') {
             const value = message.data
             this.setMap(value)
+            const playerData = getPlayerData(token)
+            if (playerData !== null) this.seatPlayer(token, playerData)
             console.log('map successfully set')
         }
     }

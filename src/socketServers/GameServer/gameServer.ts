@@ -21,7 +21,6 @@ import {
 interface ConnectedPlayer {
     token: string
     socket: WebSocket
-    playerId: number | null
     playerData: PlayerData
 }
 
@@ -97,10 +96,14 @@ class SpreadGameServer extends SocketServer<
             this.connectedPlayers[index].socket = client
             return
         }
-        const playerData = getPlayerData(token)
         if (index < 0 && this.state.type === 'lobby') {
             const playerData = getPlayerData(token)
             if (playerData === null) return
+            this.connectedPlayers.push({
+                playerData: playerData,
+                token: token,
+                socket: client,
+            })
             const playerId = this.state.seatPlayer(token, playerData)
             if (playerId !== null) {
                 const message: SetPlayerIdMessage = {
@@ -111,8 +114,6 @@ class SpreadGameServer extends SocketServer<
                 }
                 this.sendMessageToClient(client, message)
             }
-        } else {
-            this.connectedPlayers[index].socket = client
         }
     }
 

@@ -38,4 +38,10 @@ export type ServerInGameMessage = GameStateMessage | GameOverMessage
 
 type GameServerMessage = ServerLobbyMessage | ServerInGameMessage
 
+export const isServerLobbyMessage = (
+    msg: GameServerMessage,
+): msg is ServerLobbyMessage => {
+    return msg.type === 'lobbystate' || msg.type === 'playerid'
+}
+
 export default GameServerMessage
