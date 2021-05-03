@@ -1,5 +1,7 @@
 import Cell from './cell'
 
+var bubbleIds = 0
+
 export default class Bubble {
     id: number
     playerId: number
@@ -16,7 +18,8 @@ export default class Bubble {
         units: number,
         motherId: number,
     ) {
-        this.id = 1
+        this.id = bubbleIds
+        bubbleIds += 1
         this.playerId = playerId
         this.position = position
         this.direction = direction

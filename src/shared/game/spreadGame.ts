@@ -40,7 +40,7 @@ export class SpreadGame {
         var remainingBubbles: Bubble[] = []
         this.bubbles.forEach((bubble) => {
             var currentBubble: Bubble | null = bubble
-            remainingBubbles.filter((bubble2) => {
+            remainingBubbles = remainingBubbles.filter((bubble2) => {
                 if (
                     currentBubble != null &&
                     currentBubble.overlaps(bubble2) &&
@@ -51,7 +51,7 @@ export class SpreadGame {
                     )
                     currentBubble = newCurrentBubble
                     return survived
-                }
+                } else return true
             })
             if (currentBubble != null) {
                 remainingBubbles.push(currentBubble)
