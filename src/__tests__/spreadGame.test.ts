@@ -1,7 +1,7 @@
-import Bubble from './bubble'
-import Cell from './cell'
-import { SpreadMap } from './map'
-import { SpreadGame } from './spreadGame'
+import Bubble from '../shared/game/bubble'
+import Cell from '../shared/game/cell'
+import { SpreadMap } from '../shared/game/map'
+import { SpreadGame } from '../shared/game/spreadGame'
 
 const createMapHelper = (cells: Cell[]): SpreadMap => {
     return {

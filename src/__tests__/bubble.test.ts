@@ -1,4 +1,4 @@
-import Bubble from './bubble'
+import Bubble from '../shared/game/bubble'
 
 test('overlaps', () => {
     const pos1: [number, number] = [100, 100]
