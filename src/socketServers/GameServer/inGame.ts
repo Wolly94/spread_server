@@ -3,6 +3,7 @@ import { SpreadGame } from '../../shared/game/spreadGame'
 import { ClientInGameMessage } from '../../shared/inGame/gameClientMessages'
 import GameServerMessage, {
     GameStateMessage,
+    ServerInGameMessage,
 } from '../../shared/inGame/gameServerMessages'
 import { idFromToken, SeatedPlayer } from './common'
 
@@ -16,7 +17,6 @@ interface InGameState {
 
 interface InGameFunctions {
     startGame: () => void
-    isRunning: () => boolean
     onReceiveMessage: (token: string, message: ClientInGameMessage) => void
 }
 
@@ -28,12 +28,12 @@ class InGameImplementation implements InGame {
     seatedPlayers: SeatedPlayer[]
     gameState: SpreadGame
     intervalId: NodeJS.Timeout | null
-    sendMessage: (msg: GameServerMessage) => void
+    sendMessage: (msg: ServerInGameMessage) => void
 
     constructor(
         map: SpreadMap,
         seatedPlayers: SeatedPlayer[],
-        sendMessage: (msg: GameServerMessage) => void,
+        sendMessage: (msg: ServerInGameMessage) => void,
     ) {
         this.intervalId = null
         this.map = map

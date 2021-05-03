@@ -1,9 +1,5 @@
+import { SpreadMap } from '../game/map'
 import { ClientGameState } from './clientGameState'
-
-export interface GameStateMessage {
-    type: 'gamestate'
-    data: ClientGameState
-}
 
 export interface SetPlayerIdMessage {
     type: 'playerid'
@@ -12,12 +8,32 @@ export interface SetPlayerIdMessage {
     }
 }
 
+export interface ClientLobbyPlayer {
+    name: string
+    playerId: number | null
+}
+
+export interface ClientLobbyState {
+    players: ClientLobbyPlayer[]
+    map: SpreadMap | null
+}
+
+export interface LobbyStateMessage {
+    type: 'lobbystate'
+    data: ClientLobbyState
+}
+
+export interface GameStateMessage {
+    type: 'gamestate'
+    data: ClientGameState
+}
+
 export interface GameOverMessage {
     type: 'gameover'
     data: null
 }
 
-export type ServerLobbyMessage = SetPlayerIdMessage
+export type ServerLobbyMessage = SetPlayerIdMessage | LobbyStateMessage
 export type ServerInGameMessage = GameStateMessage | GameOverMessage
 
 type GameServerMessage = ServerLobbyMessage | ServerInGameMessage

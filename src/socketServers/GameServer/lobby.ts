@@ -1,5 +1,9 @@
 import { getPlayerIds, SpreadMap } from '../../shared/game/map'
 import GameServerMessage, {
+    ClientLobbyPlayer,
+    ClientLobbyState,
+    LobbyStateMessage,
+    ServerLobbyMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
 import { occupiedSeats, SeatedPlayer } from './common'
@@ -7,6 +11,10 @@ import { occupiedSeats, SeatedPlayer } from './common'
 import WebSocket from 'ws'
 import FindGameServerHandler from '../findGameServerHandler'
 import { ClientLobbyMessage } from '../../shared/inGame/gameClientMessages'
+import {
+    getPlayerData,
+    PlayerData,
+} from '../../registration/registrationHandler'
 
 interface LobbyState {
     type: 'lobby'
@@ -15,9 +23,8 @@ interface LobbyState {
 }
 
 interface LobbyFunctions {
-    seatPlayer: (token: string) => number | null
+    seatPlayer: (token: string, playerData: PlayerData) => number | null
     unseatPlayer: (token: string) => void
-    setMap: (map: SpreadMap) => void
     onReceiveMessage: (token: string, msg: ClientLobbyMessage) => void
     remainingSeats: () => number[]
 }
@@ -32,16 +39,19 @@ class LobbyImplementation implements Lobby {
         token: string,
         message: GameServerMessage,
     ) => void
+    sendMessage: (msg: ServerLobbyMessage) => void
 
     constructor(
         sendMessageToClient: (
             token: string,
             message: GameServerMessage,
         ) => void,
+        sendMessage: (msg: ServerLobbyMessage) => void,
     ) {
         this.map = null
         this.seatedPlayers = []
         this.sendMessageToClientViaToken = sendMessageToClient
+        this.sendMessage = sendMessage
     }
 
     onReceiveMessage(token: string, message: ClientLobbyMessage) {
@@ -53,16 +63,33 @@ class LobbyImplementation implements Lobby {
     }
 
     updateClients() {
-        // TODO
+        // later add list of unseatedPlayers to lobby and inGame to let them also be displayed on website
+        const players: ClientLobbyPlayer[] = this.seatedPlayers.map((sp) => {
+            const clp: ClientLobbyPlayer = {
+                name: sp.playerData.name,
+                playerId: sp.playerId,
+            }
+            return clp
+        })
+        const state: ClientLobbyState = {
+            map: this.map,
+            players,
+        }
+        const msg: LobbyStateMessage = {
+            type: 'lobbystate',
+            data: state,
+        }
+        this.sendMessage(msg)
     }
 
-    seatPlayer(token: string) {
+    seatPlayer(token: string, playerData: PlayerData) {
         const remSeats = this.remainingSeats()
         if (remSeats.length === 0) return null
         const playerId = remSeats[0]
         const newSeated: SeatedPlayer = {
             playerId: playerId,
             token: token,
+            playerData: playerData,
         }
         this.seatedPlayers.push(newSeated)
         const message: SetPlayerIdMessage = {
@@ -101,7 +128,9 @@ class LobbyImplementation implements Lobby {
     setMap(map: SpreadMap) {
         const currentlySeated = [...this.seatedPlayers]
         this.seatedPlayers = []
-        currentlySeated.forEach((sp) => this.seatPlayer(sp.token))
+        currentlySeated.forEach((sp) =>
+            this.seatPlayer(sp.token, sp.playerData),
+        )
         this.map = map
         this.updateClients()
         FindGameServerHandler.findGameServer?.updateClients()

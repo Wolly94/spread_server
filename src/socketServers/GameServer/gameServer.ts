@@ -13,11 +13,16 @@ import FindGameServerHandler from '../findGameServerHandler'
 import SocketServer from '../socketServer'
 import InGameImplementation, { InGame } from './inGame'
 import LobbyImplementation, { Lobby } from './lobby'
+import {
+    getPlayerData,
+    PlayerData,
+} from '../../registration/registrationHandler'
 
 interface ConnectedPlayer {
     token: string
     socket: WebSocket
     playerId: number | null
+    playerData: PlayerData
 }
 
 class SpreadGameServer extends SocketServer<
@@ -32,8 +37,9 @@ class SpreadGameServer extends SocketServer<
         super(port)
         this.connectedPlayers = []
 
-        const lobby = new LobbyImplementation((token, msg) =>
-            this.sendMessageToClientViaToken(token, msg),
+        const lobby = new LobbyImplementation(
+            (token, msg) => this.sendMessageToClientViaToken(token, msg),
+            (msg) => this.sendMessageToClients(msg),
         )
         this.state = lobby
     }
@@ -87,8 +93,15 @@ class SpreadGameServer extends SocketServer<
         const index = this.connectedPlayers.findIndex(
             (cp) => cp.token === token,
         )
+        if (index >= 0) {
+            this.connectedPlayers[index].socket = client
+            return
+        }
+        const playerData = getPlayerData(token)
         if (index < 0 && this.state.type === 'lobby') {
-            const playerId = this.state.seatPlayer(token)
+            const playerData = getPlayerData(token)
+            if (playerData === null) return
+            const playerId = this.state.seatPlayer(token, playerData)
             if (playerId !== null) {
                 const message: SetPlayerIdMessage = {
                     type: 'playerid',
@@ -102,6 +115,7 @@ class SpreadGameServer extends SocketServer<
             this.connectedPlayers[index].socket = client
         }
     }
+
     onDisconnect(client: WebSocket, token: string) {
         if (this.state.type === 'lobby') {
             this.state.unseatPlayer(token)

@@ -1,6 +1,9 @@
+import { PlayerData } from '../../registration/registrationHandler'
+
 export interface SeatedPlayer {
     token: string
     playerId: number
+    playerData: PlayerData
 }
 
 export const occupiedSeats = (seatedPlayers: SeatedPlayer[]) => {

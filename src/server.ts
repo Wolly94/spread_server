@@ -1,8 +1,10 @@
 import express from 'express'
 import cors from 'cors'
-import generateToken from './generateToken'
+import generateToken from './registration/generateToken'
 import { createFindGameServer, createGameServer } from './socketServers/creator'
 import FindGameServerHandler from './socketServers/findGameServerHandler'
+import { register } from 'ts-node'
+import { registerUser } from './registration/registrationHandler'
 
 const allowedOrigins = ['http://localhost:3000']
 
@@ -29,7 +31,7 @@ app.get('/find-game', (req, res) => {
 })
 
 app.get('/token', (req, res) => {
-    const token = generateToken()
+    const token = registerUser()
     res.send({ token: token })
 })
 
