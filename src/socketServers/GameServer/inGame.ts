@@ -9,6 +9,8 @@ import GameServerMessage, {
 } from '../../shared/inGame/gameServerMessages'
 import { idFromToken, remainingSeats, SeatedPlayer } from './common'
 
+const updateFrequencyInMs = 20
+
 interface InGameState {
     type: 'ingame'
     map: SpreadMap
@@ -78,7 +80,7 @@ class InGameImplementation implements InGame {
     }
 
     startGame() {
-        const ms = 50
+        const ms = updateFrequencyInMs
         this.intervalId = setInterval(() => {
             if (this.gameState !== null) {
                 this.gameState.step(ms)
