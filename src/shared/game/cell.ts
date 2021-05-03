@@ -1,5 +1,5 @@
 import Bubble from './bubble'
-import { radiusToUnits } from './common'
+import { radiusToGrowth, radiusToUnits } from './common'
 
 class Cell {
     id: number
@@ -22,7 +22,7 @@ class Cell {
         this.position = position
         this.units = units
         this.radius = radius
-        this.growthPerSecond = 1.0
+        this.growthPerSecond = radiusToGrowth(radius)
         this.saturatedUnitCount = radiusToUnits(radius)
     }
 
@@ -75,7 +75,7 @@ class Cell {
     }
     grow(ms: number) {
         const sign = this.units > this.saturatedUnitCount ? -1 : 1
-        let nextUnits = (sign * (this.growthPerSecond * ms)) / 1000
+        let nextUnits = this.units + (sign * (this.growthPerSecond * ms)) / 1000
         if (
             (nextUnits > this.saturatedUnitCount && sign === 1) ||
             (nextUnits < this.saturatedUnitCount && sign === -1)
