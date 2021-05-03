@@ -4,7 +4,7 @@ export interface PlayerData {
     name: string
 }
 
-interface RegisteredToken {
+export interface RegisteredToken {
     playerData: PlayerData
     token: string
 }

@@ -21,9 +21,15 @@ class Cell {
         this.radius = radius
         this.growthPerSecond = 1.0
     }
+
+    availableAttackers() {
+        const attacker = Math.floor(this.units / 2)
+        return attacker
+    }
+
     trySend(target: Cell): Bubble | null {
         if (this.playerId == null) return null
-        const attacker = Math.floor(this.units / 2)
+        const attacker = this.availableAttackers()
         this.units -= attacker
         var direction = [
             target.position[0] - this.position[0],

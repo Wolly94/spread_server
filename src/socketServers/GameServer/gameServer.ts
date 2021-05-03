@@ -17,6 +17,9 @@ import {
     getPlayerData,
     PlayerData,
 } from '../../registration/registrationHandler'
+import AiClient from '../../ai/aiClient'
+import { Ai, GreedyAi } from '../../ai/ai'
+import { AiPlayer } from './common'
 
 interface ConnectedPlayer {
     token: string
@@ -52,6 +55,7 @@ class SpreadGameServer extends SocketServer<
 
     lobbyToInGame() {
         if (this.state.type === 'lobby' && this.state.map !== null) {
+            // maybe clients were created faster than they could be added to the game
             const inGameState = new InGameImplementation(
                 this.state.map,
                 this.state.seatedPlayers,
@@ -130,7 +134,7 @@ class SpreadGameServer extends SocketServer<
         let players: number
         let joinedPlayers: number
         if (this.state.type === 'lobby' && this.state.map !== null) {
-            const remSeats = this.state.remainingSeats()
+            const remSeats = this.state.remainingLobbySeats()
             players = this.state.map.players
             joinedPlayers = players - remSeats.length
         } else {
