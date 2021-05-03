@@ -1,4 +1,5 @@
 import Bubble from './bubble'
+import { radiusToUnits } from './common'
 
 class Cell {
     id: number
@@ -7,6 +8,8 @@ class Cell {
     radius: number
     units: number
     growthPerSecond: number
+    saturatedUnitCount: number
+
     constructor(
         id: number,
         playerId: number | null,
@@ -20,6 +23,7 @@ class Cell {
         this.units = units
         this.radius = radius
         this.growthPerSecond = 1.0
+        this.saturatedUnitCount = radiusToUnits(radius)
     }
 
     availableAttackers() {
@@ -70,7 +74,16 @@ class Cell {
         return null
     }
     grow(ms: number) {
-        this.units += (this.growthPerSecond * ms) / 1000.0
+        const sign = this.units > this.saturatedUnitCount ? -1 : 1
+        let nextUnits = (sign * (this.growthPerSecond * ms)) / 1000
+        if (
+            (nextUnits > this.saturatedUnitCount && sign === 1) ||
+            (nextUnits < this.saturatedUnitCount && sign === -1)
+        ) {
+            this.units = this.saturatedUnitCount
+        } else {
+            this.units = nextUnits
+        }
     }
 }
 

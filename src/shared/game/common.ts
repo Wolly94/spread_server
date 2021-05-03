@@ -12,6 +12,7 @@ export const unitsToRadius = (units: number) => {
 
 // radius ~ units/second
 // 25 ~ 1
+const unitGrowthRadius = 25
 export const radiusToGrowth = (radius: number) => {
-    return radius / 25
+    return radius / unitGrowthRadius
 }
