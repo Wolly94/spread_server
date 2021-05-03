@@ -26,7 +26,7 @@ export default class Bubble {
         this.units = units
         this.radius = 25
         this.motherId = motherId
-        this.speed = 50
+        this.speed = 100
     }
     // return [this did survive?, remainingEnemy]
     collide(enemy: Bubble): [boolean, Bubble | null] {
