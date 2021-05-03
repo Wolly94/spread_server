@@ -97,22 +97,20 @@ class SpreadGameServer extends SocketServer<
             return
         }
         if (index < 0 && this.state.type === 'lobby') {
-            const playerData = getPlayerData(token)
-            if (playerData === null) return
-            this.connectedPlayers.push({
-                playerData: playerData,
-                token: token,
-                socket: client,
-            })
-            const playerId = this.state.seatPlayer(token, playerData)
-            if (playerId !== null) {
-                const message: SetPlayerIdMessage = {
-                    type: 'playerid',
-                    data: {
-                        playerId: playerId,
-                    },
-                }
-                this.sendMessageToClient(client, message)
+            if (index < 0) {
+                const playerData = getPlayerData(token)
+                if (playerData === null) return
+                this.connectedPlayers.push({
+                    playerData: playerData,
+                    token: token,
+                    socket: client,
+                })
+                this.state.onConnect(token, playerData)
+            } else {
+                this.state.onConnect(
+                    token,
+                    this.connectedPlayers[index].playerData,
+                )
             }
         }
     }

@@ -27,6 +27,7 @@ interface LobbyFunctions {
     unseatPlayer: (token: string) => void
     onReceiveMessage: (token: string, msg: ClientLobbyMessage) => void
     remainingSeats: () => number[]
+    onConnect: (token: string, playerData: PlayerData) => void
 }
 
 export type Lobby = LobbyState & LobbyFunctions
@@ -125,6 +126,10 @@ class LobbyImplementation implements Lobby {
             (id) => !occSeats.includes(id),
         )
         return remainingSeats.sort((a, b) => a - b)
+    }
+
+    onConnect(token: string, playerData: PlayerData) {
+        const playerId = this.seatPlayer(token, playerData)
     }
 
     setMap(map: SpreadMap) {
