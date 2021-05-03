@@ -7,7 +7,6 @@ import {
     GameStateMessage,
     SetPlayerIdMessage,
 } from '../shared/inGame/gameServerMessages'
-import SocketClient from '../shared/socketClients/socketClient'
 import { Ai } from './ai'
 
 class AiClient {
