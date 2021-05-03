@@ -20,6 +20,15 @@ export interface StartGameMessage {
     data: {}
 }
 
-type GameClientMessageData = SendUnitsMessage | SetMapMessage | StartGameMessage
+export type ClientLobbyMessage = SetMapMessage | StartGameMessage
+export type ClientInGameMessage = SendUnitsMessage
+
+type GameClientMessageData = ClientLobbyMessage | ClientInGameMessage
+
+export const isClientLobbyMessage = (
+    msg: GameClientMessageData,
+): msg is ClientLobbyMessage => {
+    return !(msg.type === 'sendunits')
+}
 
 export default GameClientMessageData

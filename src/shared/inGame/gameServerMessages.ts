@@ -17,6 +17,9 @@ export interface GameOverMessage {
     data: null
 }
 
-type GameServerMessage = GameStateMessage | SetPlayerIdMessage | GameOverMessage
+export type ServerLobbyMessage = SetPlayerIdMessage
+export type ServerInGameMessage = GameStateMessage | GameOverMessage
+
+type GameServerMessage = ServerLobbyMessage | ServerInGameMessage
 
 export default GameServerMessage

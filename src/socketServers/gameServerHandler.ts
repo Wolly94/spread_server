@@ -1,5 +1,5 @@
 import FindGameServerHandler from './findGameServerHandler'
-import SpreadGameServer from './gameServer'
+import SpreadGameServer from './GameServer/gameServer'
 
 class GameServerHandler {
     static runningGameServers: SpreadGameServer[] = []
@@ -16,7 +16,7 @@ class GameServerHandler {
         const gameServer = new SpreadGameServer(port)
         GameServerHandler.addRunningGameServer(gameServer)
         gameServer.open()
-        gameServer.start()
+        gameServer.lobbyToInGame()
         return gameServer.creationResponse()
     }
 }
