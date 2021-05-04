@@ -1,6 +1,17 @@
 import WebSocket from 'ws'
 import UrlResponse from '../shared/general/urlResponse'
 
+export const baseUrl = () => {
+    const node_env = process.env['NODE_ENV']
+    if (node_env === 'development') {
+        return 'ws://localhost'
+    } else if (node_env === 'production') {
+        return 'ws://ec2-3-14-131-174.us-east-2.compute.amazonaws.com'
+    } else {
+        return 'ws://localhost'
+    }
+}
+
 abstract class SocketServer<TSenderMessage, TReceiverMessage> {
     socket: WebSocket.Server
     url: string
@@ -10,7 +21,7 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
     constructor(port: number) {
         //const port = nextPort()
         this.socket = new WebSocket.Server({ port: port })
-        this.url = 'ws://localhost:' + port.toString() + '/'
+        this.url = baseUrl() + ':' + port.toString() + '/'
         this.tokenClients = new Map()
     }
 

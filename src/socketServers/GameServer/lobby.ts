@@ -15,10 +15,6 @@ import {
     PlayerData,
     RegisteredToken,
 } from '../../registration/registrationHandler'
-import { connect } from '../../ai/connectAiToGame'
-import AiClient from '../../ai/aiClient'
-import { GreedyAi } from '../../ai/ai'
-import { JsxEmit, textChangeRangeIsUnchanged } from 'typescript'
 
 interface LobbyState {
     type: 'lobby'

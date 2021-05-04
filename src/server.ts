@@ -3,6 +3,7 @@ import cors from 'cors'
 import { createFindGameServer, createGameServer } from './socketServers/creator'
 import FindGameServerHandler from './socketServers/findGameServerHandler'
 import { registerUser } from './registration/registrationHandler'
+import { baseUrl } from './socketServers/socketServer'
 
 const allowedOrigins = ['http://localhost:3000']
 
@@ -36,5 +37,5 @@ app.get('/token', (req, res) => {
 const port = 8765
 
 app.listen(port, () => {
-    console.log(`listening http://localhost:${port}`)
+    console.log(`listening on ${baseUrl()}:${port}`)
 })
