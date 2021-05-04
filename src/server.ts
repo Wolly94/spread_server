@@ -6,6 +6,8 @@ import FindGameServerHandler from './socketServers/findGameServerHandler'
 import { register } from 'ts-node'
 import { registerUser } from './registration/registrationHandler'
 
+import serverless from 'serverless-http'
+
 const allowedOrigins = ['http://localhost:3000']
 
 const options: cors.CorsOptions = {
@@ -40,3 +42,5 @@ const port = 8765
 app.listen(port, () => {
     console.log(`listening http://localhost:${port}`)
 })
+
+module.exports.handler = serverless(app)
