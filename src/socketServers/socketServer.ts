@@ -6,7 +6,8 @@ export const baseUrl = () => {
     if (node_env === 'development') {
         return 'ws://localhost'
     } else if (node_env === 'production') {
-        return 'ws://ec2-3-14-131-174.us-east-2.compute.amazonaws.com'
+        //return 'ws://ec2-3-14-131-174.us-east-2.compute.amazonaws.com'
+        return 'ws://ec2-3-143-215-131.us-east-2.compute.amazonaws.com'
     } else {
         return 'ws://localhost'
     }

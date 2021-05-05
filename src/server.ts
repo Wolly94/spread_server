@@ -5,7 +5,7 @@ import FindGameServerHandler from './socketServers/findGameServerHandler'
 import { registerUser } from './registration/registrationHandler'
 import { baseUrl } from './socketServers/socketServer'
 
-const allowedOrigins = ['http://localhost:3000']
+const allowedOrigins = ['http://localhost:3000', '*']
 
 const options: cors.CorsOptions = {
     origin: allowedOrigins,

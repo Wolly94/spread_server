@@ -3,5 +3,5 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY . .
 RUN npm install
-EXPOSE 8765
-CMD [ "npm", "run", "execute" ]
+EXPOSE 8765 3030-3040
+CMD [ "npm", "run", "start" ]
