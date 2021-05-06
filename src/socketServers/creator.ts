@@ -8,7 +8,7 @@ export const createGameServer = () => {
 }
 
 export const createFindGameServer = () => {
-    if (FindGameServerHandler.findGameServer === null) return null
+    if (FindGameServerHandler.findGameServer !== null) return null
     const port = 3030
     const result = FindGameServerHandler.createFindGameServer(port)
     return result

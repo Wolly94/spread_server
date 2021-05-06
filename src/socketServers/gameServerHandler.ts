@@ -32,7 +32,10 @@ class GameServerHandler {
         const index = GameServerHandler.gameServers.findIndex(
             (gs) => gs[0] === port,
         )
-        if (index >= 0) GameServerHandler.gameServers[index][1] = null
+        if (index >= 0) {
+            GameServerHandler.gameServers[index][1]?.shutdown()
+            GameServerHandler.gameServers[index][1] = null
+        }
 
         FindGameServerHandler.findGameServer?.updateClients()
     }

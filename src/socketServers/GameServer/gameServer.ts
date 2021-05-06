@@ -40,6 +40,14 @@ class SpreadGameServer extends SocketServer<
         this.state = lobby
     }
 
+    shutdown() {
+        if (this.state.type === 'ingame') {
+            this.state.stop()
+        }
+        this.socket.close()
+        console.log('shutdown game at port ' + this.port.toString())
+    }
+
     sendMessageToClientViaToken(token: string, msg: GameServerMessage) {
         const cp = this.connectedPlayers.find((cp) => cp.token === token)
         if (cp !== undefined) {

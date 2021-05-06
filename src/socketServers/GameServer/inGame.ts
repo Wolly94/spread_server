@@ -22,6 +22,7 @@ interface InGameState {
 
 interface InGameFunctions {
     startGame: () => void
+    stop: () => void
     onReceiveMessage: (token: string, message: ClientInGameMessage) => void
 }
 
@@ -62,6 +63,10 @@ class InGameImplementation implements InGame {
 
     isRunning() {
         return this.intervalId !== null
+    }
+
+    stop() {
+        if (this.intervalId !== null) clearInterval(this.intervalId)
     }
 
     onReceiveMessage(token: string, message: ClientInGameMessage) {
