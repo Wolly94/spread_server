@@ -52,10 +52,6 @@ export default class Bubble {
         }
     }
     overlaps(other: Bubble | Cell) {
-        const y =
-            (this.position[0] - other.position[0]) ** 2 +
-                (this.position[1] - other.position[1]) ** 2 <=
-            Math.max(this.radius, other.radius) ** 2
         return (
             (this.position[0] - other.position[0]) ** 2 +
                 (this.position[1] - other.position[1]) ** 2 <=

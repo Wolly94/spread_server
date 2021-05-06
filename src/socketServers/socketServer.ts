@@ -15,6 +15,7 @@ export const baseUrl = () => {
 abstract class SocketServer<TSenderMessage, TReceiverMessage> {
     socket: WebSocket.Server
     url: string
+    port: number
     tokenClients: Map<string, WebSocket>
 
     // later allow connecting other players and read data like skills accordingly
@@ -23,6 +24,7 @@ abstract class SocketServer<TSenderMessage, TReceiverMessage> {
         this.socket = new WebSocket.Server({ port: port })
         this.url = baseUrl() + ':' + port.toString() + '/'
         this.tokenClients = new Map()
+        this.port = port
     }
 
     // socket now accepts connections from clients

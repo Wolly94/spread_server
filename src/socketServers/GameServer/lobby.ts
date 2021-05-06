@@ -1,4 +1,9 @@
-import { getPlayerIds, SpreadMap } from '../../shared/game/map'
+import {
+    PlayerData,
+    RegisteredToken,
+} from '../../registration/registrationHandler'
+import { SpreadMap } from '../../shared/game/map'
+import { ClientLobbyMessage } from '../../shared/inGame/gameClientMessages'
 import GameServerMessage, {
     ClientLobbyPlayer,
     ClientLobbyState,
@@ -6,15 +11,8 @@ import GameServerMessage, {
     ServerLobbyMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
-import { AiPlayer, occupiedSeats, remainingSeats, SeatedPlayer } from './common'
-
-import WebSocket from 'ws'
 import FindGameServerHandler from '../findGameServerHandler'
-import { ClientLobbyMessage } from '../../shared/inGame/gameClientMessages'
-import {
-    PlayerData,
-    RegisteredToken,
-} from '../../registration/registrationHandler'
+import { remainingSeats, SeatedPlayer } from './common'
 
 interface LobbyState {
     type: 'lobby'
@@ -140,12 +138,6 @@ class LobbyImplementation implements Lobby {
             return []
         }
         return remainingSeats(this.map, this.seatedPlayers)
-        /*         const seats = getPlayerIds(this.map)
-        const occSeats = occupiedSeats(this.seatedPlayers)
-        const remainingSeats = Array.from(seats).filter(
-            (id) => !occSeats.includes(id),
-        )
-        return remainingSeats.sort((a, b) => a - b) */
     }
 
     onConnect(token: string, playerData: PlayerData) {

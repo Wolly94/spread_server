@@ -14,10 +14,19 @@ class GameServerHandler {
 
     static createGameServer = (port: number) => {
         const gameServer = new SpreadGameServer(port)
-        GameServerHandler.addRunningGameServer(gameServer)
         gameServer.open()
         gameServer.lobbyToInGame()
+        GameServerHandler.addRunningGameServer(gameServer)
         return gameServer.creationResponse()
+    }
+
+    static shutDown = (port: number) => {
+        const index = GameServerHandler.runningGameServers.findIndex(
+            (gs) => gs.port === port,
+        )
+        if (index >= 0) GameServerHandler.runningGameServers.splice(index, 1)
+
+        FindGameServerHandler.findGameServer?.updateClients()
     }
 }
 

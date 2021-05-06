@@ -1,25 +1,19 @@
 import WebSocket from 'ws'
-import { exampleMap, getPlayerIds, SpreadMap } from '../../shared/game/map'
-import { SpreadGame } from '../../shared/game/spreadGame'
+import {
+    getPlayerData,
+    PlayerData,
+} from '../../registration/registrationHandler'
 import ClientMessage from '../../shared/clientMessage'
 import { OpenGame } from '../../shared/findGame/findGameServerMessages'
 import GameClientMessageData, {
     isClientLobbyMessage,
 } from '../../shared/inGame/gameClientMessages'
-import GameServerMessage, {
-    SetPlayerIdMessage,
-} from '../../shared/inGame/gameServerMessages'
+import GameServerMessage from '../../shared/inGame/gameServerMessages'
 import FindGameServerHandler from '../findGameServerHandler'
+import GameServerHandler from '../gameServerHandler'
 import SocketServer from '../socketServer'
 import InGameImplementation, { InGame } from './inGame'
 import LobbyImplementation, { Lobby } from './lobby'
-import {
-    getPlayerData,
-    PlayerData,
-} from '../../registration/registrationHandler'
-import AiClient from '../../ai/aiClient'
-import { Ai, GreedyAi } from '../../ai/ai'
-import { AiPlayer } from './common'
 
 interface ConnectedPlayer {
     token: string
@@ -100,7 +94,7 @@ class SpreadGameServer extends SocketServer<
             this.connectedPlayers[index].socket = client
             return
         }
-        if (index < 0 && this.state.type === 'lobby') {
+        if (this.state.type === 'lobby') {
             if (index < 0) {
                 const playerData = getPlayerData(token)
                 if (playerData === null) return
@@ -122,6 +116,9 @@ class SpreadGameServer extends SocketServer<
     onDisconnect(client: WebSocket, token: string) {
         if (this.state.type === 'lobby') {
             this.state.unseatPlayer(token)
+        }
+        if (this.socket.clients.size === 0) {
+            GameServerHandler.shutDown(this.port)
         }
     }
 
