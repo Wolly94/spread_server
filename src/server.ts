@@ -22,7 +22,8 @@ app.get('/', (req, res) => {
 
 app.post('/create-game', (req, res) => {
     const data = createGameServer()
-    res.send(data)
+    if (data === null) res.send({ message: 'Couldnt create game server' })
+    else res.send(data)
 })
 app.get('/find-game', (req, res) => {
     if (FindGameServerHandler.findGameServer == null) createFindGameServer()

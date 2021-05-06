@@ -1,21 +1,15 @@
 import FindGameServerHandler from './findGameServerHandler'
+import SpreadGameServer from './GameServer/gameServer'
 import GameServerHandler from './gameServerHandler'
 
-let currentPort = 3030
-
-const nextPort = () => {
-    currentPort += 1
-    return currentPort
-}
-
 export const createGameServer = () => {
-    const port = nextPort()
-    const result = GameServerHandler.createGameServer(port)
-    return result
+    const resp = GameServerHandler.createGameServer()
+    return resp
 }
 
 export const createFindGameServer = () => {
-    const port = nextPort()
+    if (FindGameServerHandler.findGameServer === null) return null
+    const port = 3030
     const result = FindGameServerHandler.createFindGameServer(port)
     return result
 }
