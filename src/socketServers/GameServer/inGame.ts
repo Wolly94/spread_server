@@ -1,11 +1,18 @@
 import { GreedyAi } from '../../ai/ai'
 import AiClient from '../../ai/aiClient'
+import { PlayerData } from '../../registration/registrationHandler'
 import { SpreadMap } from '../../shared/game/map'
 import { SpreadGame } from '../../shared/game/spreadGame'
-import { ClientInGameMessage } from '../../shared/inGame/gameClientMessages'
+import {
+    ClientInGameMessage,
+    SetMapMessage,
+} from '../../shared/inGame/gameClientMessages'
 import GameServerMessage, {
+    ClientLobbyPlayer,
     GameStateMessage,
+    LobbyStateMessage,
     ServerInGameMessage,
+    SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
 import { idFromToken, remainingSeats, SeatedPlayer } from './common'
 
@@ -24,6 +31,7 @@ interface InGameFunctions {
     startGame: () => void
     stop: () => void
     onReceiveMessage: (token: string, message: ClientInGameMessage) => void
+    onConnect: (token: string, playerData: PlayerData) => void
 }
 
 export type InGame = InGameState & InGameFunctions
@@ -35,11 +43,19 @@ class InGameImplementation implements InGame {
     aiClients: AiClient[]
     gameState: SpreadGame
     intervalId: NodeJS.Timeout | null
+    sendMessageToClientViaToken: (
+        token: string,
+        message: GameServerMessage,
+    ) => void
     sendMessage: (msg: ServerInGameMessage) => void
 
     constructor(
         map: SpreadMap,
         seatedPlayers: SeatedPlayer[],
+        sendMessageToClient: (
+            token: string,
+            message: GameServerMessage,
+        ) => void,
         sendMessage: (msg: ServerInGameMessage) => void,
         fillWithAi: boolean = true,
     ) {
@@ -47,6 +63,7 @@ class InGameImplementation implements InGame {
         this.map = map
         this.gameState = new SpreadGame(map)
         this.seatedPlayers = seatedPlayers
+        this.sendMessageToClientViaToken = sendMessageToClient
         this.sendMessage = sendMessage
 
         if (fillWithAi) {
@@ -67,6 +84,31 @@ class InGameImplementation implements InGame {
 
     stop() {
         if (this.intervalId !== null) clearInterval(this.intervalId)
+    }
+
+    onConnect(token: string, playerData: PlayerData) {
+        const index = this.seatedPlayers.findIndex((sp) => sp.token === token)
+        const playerIdMessage: SetPlayerIdMessage = {
+            type: 'playerid',
+            data: {
+                playerId:
+                    index >= 0 ? this.seatedPlayers[index].playerId : null,
+            },
+        }
+        this.sendMessageToClientViaToken(token, playerIdMessage)
+        const players: ClientLobbyPlayer[] = this.seatedPlayers.map((sp) => {
+            const name = sp.type === 'ai' ? 'ai' : sp.playerData.name
+            const clp: ClientLobbyPlayer = {
+                name: name,
+                playerId: sp.playerId,
+            }
+            return clp
+        })
+        const lobbyStateMessage: LobbyStateMessage = {
+            type: 'lobbystate',
+            data: { map: this.map, players: players },
+        }
+        this.sendMessageToClientViaToken(token, lobbyStateMessage)
     }
 
     onReceiveMessage(token: string, message: ClientInGameMessage) {

@@ -4,7 +4,7 @@ import { ClientGameState } from './clientGameState'
 export interface SetPlayerIdMessage {
     type: 'playerid'
     data: {
-        playerId: number
+        playerId: number | null
     }
 }
 

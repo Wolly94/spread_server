@@ -61,6 +61,7 @@ class SpreadGameServer extends SocketServer<
             const inGameState = new InGameImplementation(
                 this.state.map,
                 this.state.seatedPlayers,
+                (token, msg) => this.sendMessageToClientViaToken(token, msg),
                 (msg) => this.sendMessageToClients(msg),
             )
             this.state = inGameState
@@ -98,26 +99,23 @@ class SpreadGameServer extends SocketServer<
         const index = this.connectedPlayers.findIndex(
             (cp) => cp.token === token,
         )
-        if (index >= 0) {
-            this.connectedPlayers[index].socket = client
-            return
+        let playerData: PlayerData
+        if (index < 0) {
+            const pData = getPlayerData(token)
+            if (pData === null) return
+            playerData = pData
+            this.connectedPlayers.push({
+                playerData: playerData,
+                token: token,
+                socket: client,
+            })
+        } else {
+            playerData = this.connectedPlayers[index].playerData
         }
         if (this.state.type === 'lobby') {
-            if (index < 0) {
-                const playerData = getPlayerData(token)
-                if (playerData === null) return
-                this.connectedPlayers.push({
-                    playerData: playerData,
-                    token: token,
-                    socket: client,
-                })
-                this.state.onConnect(token, playerData)
-            } else {
-                this.state.onConnect(
-                    token,
-                    this.connectedPlayers[index].playerData,
-                )
-            }
+            this.state.onConnect(token, playerData)
+        } else if (this.state.type === 'ingame') {
+            this.state.onConnect(token, playerData)
         }
     }
 
