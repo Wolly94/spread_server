@@ -17,7 +17,7 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
-    res.send({ message: 'test jenkins' })
+    res.send({ message: 'test 2 jenkins' })
 })
 
 app.post('/create-game', (req, res) => {
