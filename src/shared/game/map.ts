@@ -1,4 +1,5 @@
 import Cell from './cell'
+import { radiusToUnits } from './common'
 import { distanceToEntity } from './entites'
 
 export interface MapCell {
@@ -80,6 +81,7 @@ export const adjustCellValues = (map: SpreadMap, cell: MapCell) => {
 
     const existingCell = map.cells.find((c) => c.id === cell.id)
     cell.radius = Math.floor(cell.radius)
+    cell.units = Math.min(cell.units, 2 * radiusToUnits(cell.radius))
     cell.position = [Math.floor(cell.position[0]), Math.floor(cell.position[1])]
     if (cell.radius < mapDefaults.minRadius) return 'Radius too small!'
     const space = availableSpace(map, cell)
