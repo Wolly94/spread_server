@@ -14,7 +14,7 @@ import GameServerMessage, {
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
-import { idFromToken, remainingSeats, SeatedPlayer } from './common'
+import { AiPlayer, idFromToken, remainingSeats, SeatedPlayer } from './common'
 
 const updateFrequencyInMs = 20
 
@@ -66,13 +66,25 @@ class InGameImplementation implements InGame {
         this.sendMessageToClientViaToken = sendMessageToClient
         this.sendMessage = sendMessage
 
-        if (fillWithAi) {
-            const remSeats = remainingSeats(map, seatedPlayers)
-            this.aiClients = remSeats.map((playerId) => {
+        this.aiClients = this.seatedPlayers
+            .filter((sp): sp is AiPlayer => {
+                return sp.type === 'ai'
+            })
+            .map((sp) => {
                 const ai = new GreedyAi()
-                const aiClient = new AiClient(playerId, ai)
+                const aiClient = new AiClient(sp.playerId, ai)
                 return aiClient
             })
+
+        if (fillWithAi) {
+            const remSeats = remainingSeats(map, seatedPlayers)
+            this.aiClients.push(
+                ...remSeats.map((playerId) => {
+                    const ai = new GreedyAi()
+                    const aiClient = new AiClient(playerId, ai)
+                    return aiClient
+                }),
+            )
         } else {
             this.aiClients = []
         }

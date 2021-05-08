@@ -15,7 +15,7 @@ import GameServerMessage, {
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
 import FindGameServerHandler from '../findGameServerHandler'
-import { AiPlayer, remainingSeats, SeatedPlayer } from './common'
+import { AiPlayer, HumanPlayer, remainingSeats, SeatedPlayer } from './common'
 
 interface LobbyState {
     type: 'lobby'
@@ -110,11 +110,21 @@ class LobbyImplementation implements Lobby {
         FindGameServerHandler.findGameServer?.updateClients()
     }
 
-    takeSeat(token: string, playerId: number) {
-        const alreadyOccupied = this.seatedPlayers.some(
-            (sp) => sp.playerId === playerId && sp.type === 'human',
+    clearAiSeat(playerId: number) {
+        let seatedIndex = this.seatedPlayers.findIndex(
+            (sp) => sp.playerId === playerId,
         )
-        if (alreadyOccupied) return
+        if (seatedIndex >= 0) {
+            if (this.seatedPlayers[seatedIndex].type === 'ai') {
+                this.seatedPlayers.splice(seatedIndex, 1)
+            } else {
+                return
+            }
+        }
+    }
+
+    takeSeat(token: string, playerId: number) {
+        this.clearAiSeat(playerId)
 
         const seatedIndex = this.seatedPlayers.findIndex(
             (sp) => sp.type === 'human' && sp.token === token,
@@ -145,13 +155,8 @@ class LobbyImplementation implements Lobby {
     }
 
     clearSeat(token: string, playerId: number) {
-        const seatedIndex = this.seatedPlayers.findIndex(
-            (sp) => sp.playerId === playerId,
-        )
-        if (seatedIndex >= 0 && this.seatedPlayers[seatedIndex].type === 'ai') {
-            this.seatedPlayers.splice(seatedIndex, 1)
-            this.updateClients()
-        }
+        this.clearAiSeat(playerId)
+        this.updateClients()
     }
 
     seatAi(token: string, playerId: number) {
@@ -230,6 +235,13 @@ class LobbyImplementation implements Lobby {
 
     setMap(map: SpreadMap) {
         const currentlySeated = [...this.seatedPlayers]
+        this.unseatedPlayers.push(
+            ...this.seatedPlayers
+                .filter((sp): sp is HumanPlayer => sp.type === 'human')
+                .map((sp) => {
+                    return { playerData: sp.playerData, token: sp.token }
+                }),
+        )
         this.seatedPlayers = []
         currentlySeated.forEach((sp) => {
             if (sp.type === 'human') this.seatPlayer(sp.token)
