@@ -1,6 +1,6 @@
 import { SpreadGame } from '../shared/game/spreadGame'
 import { ClientCell, ClientGameState } from '../shared/inGame/clientGameState'
-import { SendUnitsMessage } from '../shared/inGame/gameClientMessages'
+import { SendUnitsMessage } from '../shared/inGame/clientInGameMessage'
 
 type Move = SendUnitsMessage
 

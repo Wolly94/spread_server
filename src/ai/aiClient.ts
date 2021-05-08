@@ -1,12 +1,4 @@
-import generateToken from '../registration/generateToken'
 import { ClientGameState } from '../shared/inGame/clientGameState'
-import GameClientMessageData, {
-    SendUnitsMessage,
-} from '../shared/inGame/gameClientMessages'
-import {
-    GameStateMessage,
-    SetPlayerIdMessage,
-} from '../shared/inGame/gameServerMessages'
 import { Ai } from './ai'
 
 class AiClient {

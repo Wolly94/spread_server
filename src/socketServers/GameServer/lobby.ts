@@ -3,7 +3,7 @@ import {
     RegisteredToken,
 } from '../../registration/registrationHandler'
 import { SpreadMap } from '../../shared/game/map'
-import { ClientLobbyMessage } from '../../shared/inGame/gameClientMessages'
+import { ClientLobbyMessage } from '../../shared/inGame/clientLobbyMessage'
 import GameServerMessage, {
     ClientLobbyPlayer,
     ClientLobbyState,
@@ -61,6 +61,9 @@ class LobbyImplementation implements Lobby {
             this.setMap(value)
             this.seatPlayer(token)
             console.log('map successfully set')
+        } else if (message.type === 'takeseat') {
+            const playerId = message.data.playerId
+            this.takeSeat(token, playerId)
         }
     }
 
@@ -83,6 +86,41 @@ class LobbyImplementation implements Lobby {
             data: state,
         }
         this.sendMessage(msg)
+    }
+
+    takeSeat(token: string, playerId: number) {
+        const alreadyOccupied = this.seatedPlayers.some(
+            (sp) => sp.playerId === playerId,
+        )
+        if (alreadyOccupied) return
+
+        const seatedIndex = this.seatedPlayers.findIndex(
+            (sp) => sp.token === token,
+        )
+        const unseatedIndex = this.unseatedPlayers.findIndex(
+            (usp) => usp.token === token,
+        )
+        if (seatedIndex < 0 && unseatedIndex < 0) {
+            return
+        } else if (seatedIndex >= 0) {
+            this.seatedPlayers[seatedIndex].playerId = playerId
+        } else if (unseatedIndex >= 0) {
+            this.seatedPlayers.push({
+                type: 'human',
+                token: token,
+                playerId: playerId,
+                playerData: this.unseatedPlayers[unseatedIndex].playerData,
+            })
+        }
+        const setPlayerIdMessage: SetPlayerIdMessage = {
+            type: 'playerid',
+            data: {
+                playerId: playerId,
+            },
+        }
+        this.sendMessageToClientViaToken(token, setPlayerIdMessage)
+        this.updateClients()
+        FindGameServerHandler.findGameServer?.updateClients()
     }
 
     seatPlayer(token: string) {

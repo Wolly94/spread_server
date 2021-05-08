@@ -3,10 +3,7 @@ import AiClient from '../../ai/aiClient'
 import { PlayerData } from '../../registration/registrationHandler'
 import { SpreadMap } from '../../shared/game/map'
 import { SpreadGame } from '../../shared/game/spreadGame'
-import {
-    ClientInGameMessage,
-    SetMapMessage,
-} from '../../shared/inGame/gameClientMessages'
+import { ClientInGameMessage } from '../../shared/inGame/clientInGameMessage'
 import GameServerMessage, {
     ClientLobbyPlayer,
     GameStateMessage,
