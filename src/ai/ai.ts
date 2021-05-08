@@ -12,7 +12,9 @@ const availableAttackers = (cell: ClientCell) => {
     return cell.units / 2
 }
 
-const estimatedDefenders = (attacker: ClientCell, defender: ClientCell) => {}
+const estimatedDefenders = (attacker: ClientCell, defender: ClientCell) => {
+    return defender.units
+}
 
 export class GreedyAi implements Ai {
     getMove(state: ClientGameState, playerId: number) {
