@@ -12,11 +12,13 @@ const availableAttackers = (cell: ClientCell) => {
     return cell.units / 2
 }
 
+const estimatedDefenders = (attacker: ClientCell, defender: ClientCell) => {}
+
 export class GreedyAi implements Ai {
     getMove(state: ClientGameState, playerId: number) {
         const myCells = state.cells
             .filter((c) => c.playerId === playerId)
-            .filter((c) => c.units >= 20)
+            .filter((c) => c.units >= 15)
             // strongest cells first
             .sort((c1, c2) => c2.units - c1.units)
         const weakestUnownedCells = state.cells
