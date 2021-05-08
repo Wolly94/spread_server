@@ -28,7 +28,7 @@ export class GreedyAi implements Ai {
         const weakestUnownedCell = weakestUnownedCells[0]
         let senderIds: number[] = []
         const attackers = myCells.reduce((units, cell) => {
-            if (units < weakestUnownedCell.units) {
+            if (units - 1 < weakestUnownedCell.units) {
                 senderIds.push(cell.id)
                 return units + availableAttackers(cell)
             } else {

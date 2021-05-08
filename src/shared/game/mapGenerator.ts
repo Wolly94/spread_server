@@ -1,4 +1,13 @@
-import { addCellToMap, emptyMap, MapCell, SpreadMap } from './map'
+import {
+    addCellToMap,
+    availableSpace,
+    availableSpaceFromPosition,
+    emptyMap,
+    MapCell,
+    SpreadMap,
+} from './map'
+
+const minDistance = 10
 
 function getRandomIntInclusive(min: number, max: number) {
     min = Math.ceil(min)
@@ -13,15 +22,17 @@ const calculateDensity = (map: SpreadMap) => {
     return covered / (map.width * map.height)
 }
 
-export const generate2PlayerMap = () => {
+export const generate2PlayerMap = (squareSideLength: number) => {
     let cellId = 1
     const cellDensity = 0.05
     const cellRadii = [25, 100]
-    const playerDist = [5, 3, 1] // 5 null : 3 owner of side : 1 owner of other side
+    const playerDist = [12, 3, 1] // 12 null : 3 owner of side : 1 owner of other side
     const radiusAccuracy = 5
     let setStartingCells = false
     let map = emptyMap()
-    const half = 500
+    map.width = squareSideLength
+    map.height = squareSideLength
+    const half = squareSideLength / 2
     const mapCenter = [half, half]
     // generate cells on the map
     while (calculateDensity(map) < cellDensity) {
@@ -38,7 +49,7 @@ export const generate2PlayerMap = () => {
         } else {
             playerId = 1
         }
-        const radius =
+        let radius =
             getRandomIntInclusive(
                 cellRadii[0] / radiusAccuracy,
                 cellRadii[1] / radiusAccuracy,
@@ -46,6 +57,8 @@ export const generate2PlayerMap = () => {
         const units = getRandomIntInclusive(radius / 8, radius)
         let x = getRandomIntInclusive(0, half)
         let y = getRandomIntInclusive(0, 2 * half)
+        const avSpace = availableSpaceFromPosition(map, [x, y])
+        radius = Math.min(avSpace - minDistance, radius)
         if ((x - mapCenter[0]) ** 2 + (y - mapCenter[1]) ** 2 <= radius ** 2) {
             x = mapCenter[0]
             y = mapCenter[1]

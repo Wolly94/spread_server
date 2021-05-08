@@ -38,19 +38,40 @@ export const mapDefaults = {
     maxPlayers: 4,
 }
 
+export const distanceToBoundary = (
+    map: SpreadMap,
+    position: [number, number],
+) => {
+    return Math.min(
+        position[0],
+        position[1],
+        map.width - position[0],
+        map.height - position[1],
+    )
+}
+
+const distanceToCells = (cells: MapCell[], position: [number, number]) => {
+    return Math.min(...cells.map((c) => distanceToEntity(c, position)))
+}
+
+export const availableSpaceFromPosition = (
+    map: SpreadMap,
+    position: [number, number],
+) => {
+    return Math.min(
+        distanceToBoundary(map, position),
+        distanceToCells(map.cells, position),
+    )
+}
+
 export const availableSpace = (map: SpreadMap, cell: MapCell) => {
-    const availableSpace = Math.floor(
-        Math.min(
-            cell.position[0],
-            cell.position[1],
-            map.width - cell.position[0],
-            map.height - cell.position[1],
-            ...map.cells
-                .filter((c) => c.id !== cell.id)
-                .map((c) => distanceToEntity(c, cell.position)),
+    return Math.min(
+        distanceToBoundary(map, cell.position),
+        distanceToCells(
+            map.cells.filter((c) => c.id !== cell.id),
+            cell.position,
         ),
     )
-    return availableSpace
 }
 
 // modifies cell
@@ -58,28 +79,15 @@ export const adjustCellValues = (map: SpreadMap, cell: MapCell) => {
     cell.units = Math.floor(cell.units)
 
     const existingCell = map.cells.find((c) => c.id === cell.id)
-    if (
-        // in this case you dont need to calculate the space
-        existingCell !== undefined &&
-        existingCell.radius === cell.radius &&
-        existingCell.position[0] === cell.position[0] &&
-        existingCell.position[1] === cell.position[1]
-    ) {
-        return null
-    } else {
-        cell.radius = Math.floor(cell.radius)
-        cell.position = [
-            Math.floor(cell.position[0]),
-            Math.floor(cell.position[1]),
-        ]
-        if (cell.radius < mapDefaults.minRadius) return 'Radius too small!'
-        const space = availableSpace(map, cell)
-        if (space < mapDefaults.minRadius) {
-            return 'Not enough space!'
-        }
-        cell.radius = Math.min(space, cell.radius)
-        return null
+    cell.radius = Math.floor(cell.radius)
+    cell.position = [Math.floor(cell.position[0]), Math.floor(cell.position[1])]
+    if (cell.radius < mapDefaults.minRadius) return 'Radius too small!'
+    const space = availableSpace(map, cell)
+    if (space < mapDefaults.minRadius) {
+        return 'Not enough space!'
     }
+    cell.radius = Math.min(space, cell.radius)
+    return null
 }
 
 export const updateCellInMap = (

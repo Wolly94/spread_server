@@ -3,17 +3,15 @@ import Bubble from './bubble'
 import Cell from './cell'
 import { MapCell } from './map'
 
+const distance = (pos1: [number, number], pos2: [number, number]) => {
+    return Math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+}
+
 export const distanceToEntity = (
     entity: Cell | Bubble | MapCell,
     pos: [number, number],
 ) => {
-    const result = Math.max(
-        0,
-        Math.sqrt(
-            (entity.position[0] - pos[0]) ** 2 +
-                (entity.position[1] - pos[1]) ** 2,
-        ) - entity.radius,
-    )
+    const result = Math.max(0, distance(entity.position, pos) - entity.radius)
     return result
 }
 
