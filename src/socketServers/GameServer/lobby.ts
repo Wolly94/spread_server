@@ -5,14 +5,17 @@ import {
 import { SpreadMap } from '../../shared/game/map'
 import { ClientLobbyMessage } from '../../shared/inGame/clientLobbyMessage'
 import GameServerMessage, {
+    ClientAiPlayer,
+    ClientHumanPlayer,
     ClientLobbyPlayer,
     ClientLobbyState,
+    ClientObserver,
     LobbyStateMessage,
     ServerLobbyMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
 import FindGameServerHandler from '../findGameServerHandler'
-import { remainingSeats, SeatedPlayer } from './common'
+import { AiPlayer, remainingSeats, SeatedPlayer } from './common'
 
 interface LobbyState {
     type: 'lobby'
@@ -64,38 +67,57 @@ class LobbyImplementation implements Lobby {
         } else if (message.type === 'takeseat') {
             const playerId = message.data.playerId
             this.takeSeat(token, playerId)
+        } else if (message.type === 'clearseat') {
+            const playerId = message.data.playerId
+            this.clearSeat(token, playerId)
+        } else if (message.type === 'seatai') {
+            const playerId = message.data.playerId
+            this.seatAi(token, playerId)
         }
     }
 
     updateClients() {
         // later add list of unseatedPlayers to lobby and inGame to let them also be displayed on website
         const players: ClientLobbyPlayer[] = this.seatedPlayers.map((sp) => {
-            const name = sp.type === 'ai' ? 'ai' : sp.playerData.name
-            const clp: ClientLobbyPlayer = {
-                name: name,
-                playerId: sp.playerId,
+            if (sp.type === 'ai') {
+                const aip: ClientAiPlayer = {
+                    type: 'ai',
+                    playerId: sp.playerId,
+                }
+                return aip
+            } else {
+                const clp: ClientHumanPlayer = {
+                    type: 'human',
+                    name: sp.playerData.name,
+                    playerId: sp.playerId,
+                }
+                return clp
             }
-            return clp
+        })
+        const observers: ClientObserver[] = this.unseatedPlayers.map((usp) => {
+            return { name: usp.playerData.name }
         })
         const state: ClientLobbyState = {
             map: this.map,
             players,
+            observers: observers,
         }
         const msg: LobbyStateMessage = {
             type: 'lobbystate',
             data: state,
         }
         this.sendMessage(msg)
+        FindGameServerHandler.findGameServer?.updateClients()
     }
 
     takeSeat(token: string, playerId: number) {
         const alreadyOccupied = this.seatedPlayers.some(
-            (sp) => sp.playerId === playerId,
+            (sp) => sp.playerId === playerId && sp.type === 'human',
         )
         if (alreadyOccupied) return
 
         const seatedIndex = this.seatedPlayers.findIndex(
-            (sp) => sp.token === token,
+            (sp) => sp.type === 'human' && sp.token === token,
         )
         const unseatedIndex = this.unseatedPlayers.findIndex(
             (usp) => usp.token === token,
@@ -120,12 +142,35 @@ class LobbyImplementation implements Lobby {
         }
         this.sendMessageToClientViaToken(token, setPlayerIdMessage)
         this.updateClients()
-        FindGameServerHandler.findGameServer?.updateClients()
+    }
+
+    clearSeat(token: string, playerId: number) {
+        const seatedIndex = this.seatedPlayers.findIndex(
+            (sp) => sp.playerId === playerId,
+        )
+        if (seatedIndex >= 0 && this.seatedPlayers[seatedIndex].type === 'ai') {
+            this.seatedPlayers.splice(seatedIndex, 1)
+            this.updateClients()
+        }
+    }
+
+    seatAi(token: string, playerId: number) {
+        const seatedIndex = this.seatedPlayers.findIndex(
+            (sp) => sp.playerId === playerId,
+        )
+        if (seatedIndex < 0) {
+            const ai: AiPlayer = {
+                playerId: playerId,
+                type: 'ai',
+            }
+            this.seatedPlayers.push(ai)
+            this.updateClients()
+        }
     }
 
     seatPlayer(token: string) {
         const seatedIndex = this.seatedPlayers.findIndex(
-            (sp) => sp.token === token,
+            (sp) => sp.type === 'human' && sp.token === token,
         )
         if (seatedIndex >= 0) return null
         const unseatedIndex = this.unseatedPlayers.findIndex(
@@ -152,12 +197,13 @@ class LobbyImplementation implements Lobby {
         }
         this.sendMessageToClientViaToken(newSeated.token, message)
         this.updateClients()
-        FindGameServerHandler.findGameServer?.updateClients()
         return playerId
     }
 
     unseatPlayer(token: string) {
-        const index = this.seatedPlayers.findIndex((sp) => sp.token === token)
+        const index = this.seatedPlayers.findIndex(
+            (sp) => sp.type === 'human' && sp.token === token,
+        )
         if (index >= 0) {
             const sp = this.seatedPlayers[index]
             if (sp.type === 'human')
@@ -168,7 +214,6 @@ class LobbyImplementation implements Lobby {
             this.seatedPlayers = this.seatedPlayers.splice(index, 1)
         }
         this.updateClients()
-        FindGameServerHandler.findGameServer?.updateClients()
     }
 
     remainingLobbySeats() {
@@ -186,10 +231,11 @@ class LobbyImplementation implements Lobby {
     setMap(map: SpreadMap) {
         const currentlySeated = [...this.seatedPlayers]
         this.seatedPlayers = []
-        currentlySeated.forEach((sp) => this.seatPlayer(sp.token))
+        currentlySeated.forEach((sp) => {
+            if (sp.type === 'human') this.seatPlayer(sp.token)
+        })
         this.map = map
         this.updateClients()
-        FindGameServerHandler.findGameServer?.updateClients()
     }
 }
 

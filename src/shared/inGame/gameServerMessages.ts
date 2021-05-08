@@ -8,13 +8,26 @@ export interface SetPlayerIdMessage {
     }
 }
 
-export interface ClientLobbyPlayer {
-    name: string
-    playerId: number | null
+export interface ClientAiPlayer {
+    type: 'ai'
+    playerId: number
 }
+
+export interface ClientHumanPlayer {
+    type: 'human'
+    name: string
+    playerId: number
+}
+
+export interface ClientObserver {
+    name: string
+}
+
+export type ClientLobbyPlayer = ClientAiPlayer | ClientHumanPlayer
 
 export interface ClientLobbyState {
     players: ClientLobbyPlayer[]
+    observers: ClientObserver[]
     map: SpreadMap | null
 }
 

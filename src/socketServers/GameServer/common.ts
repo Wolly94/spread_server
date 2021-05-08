@@ -4,9 +4,7 @@ import { getPlayerIds, SpreadMap } from '../../shared/game/map'
 
 export interface AiPlayer {
     type: 'ai'
-    token: string
     playerId: number
-    client: AiClient
 }
 
 export interface HumanPlayer {
@@ -23,7 +21,9 @@ export const occupiedSeats = (seatedPlayers: SeatedPlayer[]) => {
 }
 
 export const idFromToken = (token: string, seatedPlayers: SeatedPlayer[]) => {
-    const sp = seatedPlayers.find((sp) => sp.token === token)
+    const sp = seatedPlayers.find(
+        (sp) => sp.type === 'human' && sp.token === token,
+    )
     if (sp !== undefined) return sp.playerId
     else return null
 }

@@ -5,7 +5,10 @@ import { SpreadMap } from '../../shared/game/map'
 import { SpreadGame } from '../../shared/game/spreadGame'
 import { ClientInGameMessage } from '../../shared/inGame/clientInGameMessage'
 import GameServerMessage, {
+    ClientAiPlayer,
+    ClientHumanPlayer,
     ClientLobbyPlayer,
+    ClientObserver,
     GameStateMessage,
     LobbyStateMessage,
     ServerInGameMessage,
@@ -84,7 +87,9 @@ class InGameImplementation implements InGame {
     }
 
     onConnect(token: string, playerData: PlayerData) {
-        const index = this.seatedPlayers.findIndex((sp) => sp.token === token)
+        const index = this.seatedPlayers.findIndex(
+            (sp) => sp.type === 'human' && sp.token === token,
+        )
         const playerIdMessage: SetPlayerIdMessage = {
             type: 'playerid',
             data: {
@@ -94,16 +99,25 @@ class InGameImplementation implements InGame {
         }
         this.sendMessageToClientViaToken(token, playerIdMessage)
         const players: ClientLobbyPlayer[] = this.seatedPlayers.map((sp) => {
-            const name = sp.type === 'ai' ? 'ai' : sp.playerData.name
-            const clp: ClientLobbyPlayer = {
-                name: name,
-                playerId: sp.playerId,
+            if (sp.type === 'ai') {
+                const aip: ClientAiPlayer = {
+                    type: 'ai',
+                    playerId: sp.playerId,
+                }
+                return aip
+            } else {
+                const clp: ClientHumanPlayer = {
+                    type: 'human',
+                    name: sp.playerData.name,
+                    playerId: sp.playerId,
+                }
+                return clp
             }
-            return clp
         })
+        const observers: ClientObserver[] = []
         const lobbyStateMessage: LobbyStateMessage = {
             type: 'lobbystate',
-            data: { map: this.map, players: players },
+            data: { map: this.map, players: players, observers: observers },
         }
         this.sendMessageToClientViaToken(token, lobbyStateMessage)
     }

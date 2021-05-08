@@ -15,7 +15,19 @@ export interface TakeSeatMessage {
     data: { playerId: number }
 }
 
+export interface SeatAiMessage {
+    type: 'seatai'
+    data: { playerId: number }
+}
+
+export interface ClearSeatMessage {
+    type: 'clearseat'
+    data: { playerId: number }
+}
+
 export type ClientLobbyMessage =
     | SetMapMessage
     | StartGameMessage
     | TakeSeatMessage
+    | SeatAiMessage
+    | ClearSeatMessage
