@@ -12,12 +12,16 @@ export default class Bubble {
     speed: number
     radius: number
     units: number
+    targetId: number
+    targetPos: [number, number]
     constructor(
         playerId: number,
         position: [number, number],
         direction: [number, number],
         units: number,
         motherId: number,
+        targetId: number,
+        targetPos: [number, number],
     ) {
         this.id = bubbleIds
         bubbleIds += 1
@@ -27,6 +31,8 @@ export default class Bubble {
         this.units = units
         this.motherId = motherId
         this.speed = 100
+        this.targetId = targetId
+        this.targetPos = targetPos
         this.radius = unitsToRadius(units)
     }
 

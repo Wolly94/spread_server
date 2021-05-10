@@ -56,6 +56,8 @@ class Cell {
             normedDirection,
             attacker,
             this.id,
+            target.id,
+            target.position,
         )
         return bubble
     }
