@@ -57,6 +57,11 @@ const basicMechanics: SpreadGameMechanics = {
         }
         return null
     },
+    move: (bubble: Bubble, ms: number) => {
+        bubble.position[0] += (bubble.speed * bubble.direction[0] * ms) / 1000.0
+        bubble.position[1] += (bubble.speed * bubble.direction[1] * ms) / 1000.0
+        return bubble
+    },
 }
 
 export default basicMechanics

@@ -39,9 +39,4 @@ export default class Bubble {
     updateRadius() {
         this.radius = unitsToRadius(this.units)
     }
-
-    move(ms: number) {
-        this.position[0] += (this.speed * this.direction[0] * ms) / 1000.0
-        this.position[1] += (this.speed * this.direction[1] * ms) / 1000.0
-    }
 }

@@ -37,6 +37,7 @@ export interface SpreadGameMechanics {
         fightModifier: FightModifier,
     ) => Bubble | null
     collides: (bubble: Bubble, entity: Bubble | Cell) => boolean
+    move: (bubble: Bubble, ms: number) => Bubble
 }
 
 export type SpreadGame = SpreadGameState &
@@ -69,13 +70,14 @@ export class SpreadGameImplementation implements SpreadGame {
     }
 
     step(ms: number) {
-        this.bubbles.forEach((bubble) => bubble.move(ms))
+        this.bubbles.map((bubble) => this.mechanics.move(bubble, ms))
         this.cells.forEach((cell) => {
             if (cell.playerId !== null) cell.grow(ms)
         })
         this.collideBubblesWithCells()
         this.collideBubblesWithBubbles()
     }
+
     collideBubblesWithBubbles() {
         var remainingBubbles: Bubble[] = []
         this.bubbles.forEach((bubble) => {
