@@ -1,5 +1,5 @@
+import { radiusToGrowth, radiusToUnits } from '../shared/game/common'
 import Bubble from './bubble'
-import { radiusToGrowth, radiusToUnits } from './common'
 
 class Cell {
     id: number
@@ -58,20 +58,6 @@ class Cell {
             this.id,
         )
         return bubble
-    }
-    collide(other: Bubble): Bubble | null {
-        if (this.playerId === other.playerId) {
-            this.units += other.units
-        } else {
-            const result = this.units - other.units
-            if (result >= 0) {
-                this.units = result
-            } else {
-                this.units = -result
-                this.playerId = other.playerId
-            }
-        }
-        return null
     }
     grow(ms: number) {
         const sign = this.units > this.saturatedUnitCount ? -1 : 1

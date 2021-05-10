@@ -1,16 +1,57 @@
-import { ClientGameState } from '../inGame/clientGameState'
+import { getPlayerIds, SpreadMap } from '../shared/game/map'
+import { ClientGameState } from '../shared/inGame/clientGameState'
 import Bubble from './bubble'
 import Cell from './cell'
-import { getPlayerIds, SpreadMap } from './map'
 import Player from './player'
 
-export class SpreadGame {
+export interface SpreadGameState {
     cells: Cell[]
     bubbles: Bubble[]
     players: Player[]
+}
 
-    constructor(map: SpreadMap) {
+export interface SpreadGameInteraction {
+    sendUnits: (
+        playerId: number,
+        senderIds: number[],
+        receiverId: number,
+    ) => void
+}
+
+export interface SpreadGameFunctions {
+    step: (ms: number) => void
+    toClientGameState: () => ClientGameState
+}
+
+export interface FightModifier {}
+
+export interface SpreadGameMechanics {
+    collideBubble: (
+        bubble1: Bubble,
+        bubble2: Bubble,
+        fightModifier: FightModifier,
+    ) => [Bubble | null, Bubble | null]
+    collideCell: (
+        bubble: Bubble,
+        cell: Cell,
+        fightModifier: FightModifier,
+    ) => Bubble | null
+    collides: (bubble: Bubble, entity: Bubble | Cell) => boolean
+}
+
+export type SpreadGame = SpreadGameState &
+    SpreadGameFunctions &
+    SpreadGameInteraction
+
+export class SpreadGameImplementation implements SpreadGame {
+    cells: Cell[]
+    bubbles: Bubble[]
+    players: Player[]
+    mechanics: SpreadGameMechanics
+
+    constructor(map: SpreadMap, gameMechanics: SpreadGameMechanics) {
         const players = getPlayerIds(map)
+        this.mechanics = gameMechanics
         this.cells = map.cells.map((mapCell) => {
             const cell: Cell = new Cell(
                 mapCell.id,
@@ -36,21 +77,21 @@ export class SpreadGame {
         this.collideBubblesWithBubbles()
     }
     collideBubblesWithBubbles() {
-        // let bubbles collide with each other
         var remainingBubbles: Bubble[] = []
         this.bubbles.forEach((bubble) => {
             var currentBubble: Bubble | null = bubble
             remainingBubbles = remainingBubbles.filter((bubble2) => {
                 if (
                     currentBubble != null &&
-                    currentBubble.overlaps(bubble2) &&
-                    currentBubble.playerId != bubble2.playerId
+                    this.mechanics.collides(currentBubble, bubble2)
                 ) {
-                    const [survived, newCurrentBubble] = bubble2.collide(
+                    const [rem1, rem2] = this.mechanics.collideBubble(
+                        bubble2,
                         currentBubble,
+                        {},
                     )
-                    currentBubble = newCurrentBubble
-                    return survived
+                    currentBubble = rem2
+                    return rem1 !== null
                 } else return true
             })
             if (currentBubble != null) {
@@ -66,11 +107,15 @@ export class SpreadGame {
             this.cells.forEach((cell) => {
                 if (
                     currentBubble != null &&
-                    currentBubble.overlaps(cell) &&
+                    this.mechanics.collides(currentBubble, cell) &&
                     (currentBubble.motherId !== cell.id ||
                         currentBubble.playerId !== cell.playerId)
                 ) {
-                    currentBubble = cell.collide(currentBubble)
+                    currentBubble = this.mechanics.collideCell(
+                        currentBubble,
+                        cell,
+                        {},
+                    )
                 }
             })
             if (currentBubble != null) {

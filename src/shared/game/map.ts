@@ -1,4 +1,3 @@
-import Cell from './cell'
 import { radiusToUnits } from './common'
 import { distanceToEntity } from './entites'
 
@@ -168,17 +167,4 @@ export const validateMap = (map: SpreadMap) => {
     const playerCount = new Set(m.cells.map((c) => c.playerId)).size - 1
     if (playerCount !== map.players) message += '\nnumber of players adjusted'
     return { map: { ...m, players: playerCount }, message: message }
-}
-
-export const exampleMap = (): SpreadMap => {
-    return {
-        cells: [
-            new Cell(0, 0, [100, 100], 100, 50),
-            new Cell(1, 0, [200, 200], 100, 50),
-            new Cell(2, 1, [300, 300], 75, 50),
-        ],
-        players: 2,
-        width: 1000,
-        height: 1000,
-    }
 }

@@ -2,7 +2,6 @@ import { GreedyAi } from '../../ai/ai'
 import AiClient from '../../ai/aiClient'
 import { PlayerData } from '../../registration/registrationHandler'
 import { SpreadMap } from '../../shared/game/map'
-import { SpreadGame } from '../../shared/game/spreadGame'
 import { ClientInGameMessage } from '../../shared/inGame/clientInGameMessage'
 import GameServerMessage, {
     ClientAiPlayer,
@@ -14,6 +13,11 @@ import GameServerMessage, {
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
+import basicMechanics from '../../spreadGame/basicMechanics'
+import {
+    SpreadGame,
+    SpreadGameImplementation,
+} from '../../spreadGame/spreadGame'
 import { AiPlayer, idFromToken, remainingSeats, SeatedPlayer } from './common'
 
 const updateFrequencyInMs = 20
@@ -61,7 +65,7 @@ class InGameImplementation implements InGame {
     ) {
         this.intervalId = null
         this.map = map
-        this.gameState = new SpreadGame(map)
+        this.gameState = new SpreadGameImplementation(map, basicMechanics)
         this.seatedPlayers = seatedPlayers
         this.sendMessageToClientViaToken = sendMessageToClient
         this.sendMessage = sendMessage
