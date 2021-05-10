@@ -1,13 +1,25 @@
+import { distance } from '../shared/game/entites'
 import Bubble from './bubble'
 import Cell from './cell'
 import { FightModifier, SpreadGameMechanics } from './spreadGame'
 
+export const fight = (
+    att: number,
+    def: number,
+    fightModifier: FightModifier,
+): number => {
+    return att - def
+}
+
+export const reinforce = (sender: number, receiver: number) => {
+    return sender + receiver
+}
+
 const basicMechanics: SpreadGameMechanics = {
     collides: (bubble: Bubble, entity: Bubble | Cell) => {
         return (
-            (bubble.position[0] - entity.position[0]) ** 2 +
-                (bubble.position[1] - entity.position[1]) ** 2 <=
-            Math.max(bubble.radius, entity.radius) ** 2
+            distance(bubble.position, entity.position) <=
+            Math.max(bubble.radius, entity.radius)
         )
     },
     collideBubble: (
@@ -18,7 +30,7 @@ const basicMechanics: SpreadGameMechanics = {
         // TODO modify 'this' accordingly
         // return
         if (bubble1.playerId === bubble2.playerId) return [bubble1, bubble2]
-        const result = bubble1.units - bubble2.units
+        const result = fight(bubble1.units, bubble2.units, fightModifier)
         if (result === 0) {
             return [null, null]
         } else if (result > 0) {
@@ -33,9 +45,9 @@ const basicMechanics: SpreadGameMechanics = {
     },
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
         if (bubble.playerId === cell.playerId) {
-            cell.units += bubble.units
+            cell.units = reinforce(bubble.units, cell.units)
         } else {
-            const result = cell.units - bubble.units
+            const result = fight(cell.units, bubble.units, fightModifier)
             if (result >= 0) {
                 cell.units = result
             } else {

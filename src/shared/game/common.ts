@@ -1,5 +1,5 @@
 // units ~ radius^2 where 50 ~ 50
-const radiusToUnitsFixPoint = 50
+export const radiusToUnitsFixPoint = 50
 export const radiusToUnits = (radius: number) => {
     if (radius <= 0) return 0
     return radius ** 2 / radiusToUnitsFixPoint

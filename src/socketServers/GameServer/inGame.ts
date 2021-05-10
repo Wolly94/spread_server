@@ -14,6 +14,7 @@ import GameServerMessage, {
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
 import basicMechanics from '../../spreadGame/basicMechanics'
+import scrapeOffMechanics from '../../spreadGame/scrapeOffMechanics'
 import {
     SpreadGame,
     SpreadGameImplementation,
@@ -65,7 +66,8 @@ class InGameImplementation implements InGame {
     ) {
         this.intervalId = null
         this.map = map
-        this.gameState = new SpreadGameImplementation(map, basicMechanics)
+        //this.gameState = new SpreadGameImplementation(map, basicMechanics)
+        this.gameState = new SpreadGameImplementation(map, scrapeOffMechanics)
         this.seatedPlayers = seatedPlayers
         this.sendMessageToClientViaToken = sendMessageToClient
         this.sendMessage = sendMessage
