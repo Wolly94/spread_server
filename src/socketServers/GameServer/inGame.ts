@@ -8,14 +8,11 @@ import GameServerMessage, {
     ClientHumanPlayer,
     ClientLobbyPlayer,
     ClientObserver,
-    GameStateMessage,
     LobbyStateMessage,
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
-import basicMechanics from '../../spreadGame/basicMechanics'
 import bounceMechanics from '../../spreadGame/bounceMechanics'
-import scrapeOffMechanics from '../../spreadGame/scrapeOffMechanics'
 import {
     SpreadGame,
     SpreadGameImplementation,
@@ -63,7 +60,6 @@ class InGameImplementation implements InGame {
             message: GameServerMessage,
         ) => void,
         sendMessage: (msg: ServerInGameMessage) => void,
-        fillWithAi: boolean = true,
     ) {
         this.intervalId = null
         this.map = map
@@ -83,19 +79,6 @@ class InGameImplementation implements InGame {
                 const aiClient = new AiClient(sp.playerId, ai)
                 return aiClient
             })
-
-        if (fillWithAi) {
-            const remSeats = remainingSeats(map, seatedPlayers)
-            this.aiClients.push(
-                ...remSeats.map((playerId) => {
-                    const ai = new GreedyAi()
-                    const aiClient = new AiClient(playerId, ai)
-                    return aiClient
-                }),
-            )
-        } else {
-            this.aiClients = []
-        }
     }
 
     isRunning() {
