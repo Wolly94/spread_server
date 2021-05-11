@@ -1,7 +1,8 @@
-import Bubble from '../shared/game/bubble'
-import Cell from '../shared/game/cell'
 import { SpreadMap } from '../shared/game/map'
-import { SpreadGame } from '../shared/game/spreadGame'
+import basicMechanics from '../spreadGame/basicMechanics'
+import Bubble from '../spreadGame/bubble'
+import Cell from '../spreadGame/cell'
+import { SpreadGameImplementation } from '../spreadGame/spreadGame'
 
 const createMapHelper = (cells: Cell[]): SpreadMap => {
     return {
@@ -25,7 +26,10 @@ test('bubble collision', () => {
         new Cell(0, 0, [100, 100], 50, 50),
         new Cell(1, 1, [400, 500], 50, 50),
     ]
-    const gameState = new SpreadGame(createMapHelper(cells))
+    const gameState = new SpreadGameImplementation(
+        createMapHelper(cells),
+        basicMechanics,
+    )
     gameState.sendUnits(0, [0], 1)
     gameState.sendUnits(1, [1], 0)
     expect(gameState.bubbles.length).toBe(2)
