@@ -4,6 +4,8 @@ import Bubble from './bubble'
 import Cell from './cell'
 import { SpreadGameMechanics, FightModifier } from './spreadGame'
 
+const minUnitsOnBounce = 1
+
 type vector = [number, number]
 
 const onb = (e1: vector): vector => {
@@ -54,23 +56,12 @@ const adjustedDirection = (
     ]
     const wrongSide = coords[0] < 0
     const wrongPart = coords[1]
+    const scale = dirMistake / 3
     if (wrongPart >= 0) {
-        return rotate(
-            bubbleDir,
-            -baseAngle * (wrongSide ? 2 - wrongPart : wrongPart),
-        )
+        return rotate(bubbleDir, -baseAngle * scale)
     } else {
-        return rotate(
-            bubbleDir,
-            +baseAngle * (wrongSide ? 2 + wrongPart : -wrongPart),
-        )
+        return rotate(bubbleDir, +baseAngle * scale)
     }
-    if (Math.abs(wrongPart) <= requiredAccuracy) {
-    }
-
-    const scalar = wrongPart * dirMistake
-    const angle = scalar * baseAngle
-    return rotate(bubbleDir, angle)
 }
 
 const bounceMechanics: SpreadGameMechanics = {
@@ -85,7 +76,7 @@ const bounceMechanics: SpreadGameMechanics = {
         bubble2: Bubble,
         fightModifier: FightModifier,
     ) => {
-        return [null, null]
+        return basicMechanics.collideBubble(bubble1, bubble2, fightModifier)
     },
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
         // bubble reached its destiny?
@@ -94,10 +85,13 @@ const bounceMechanics: SpreadGameMechanics = {
                 return basicMechanics.collideCell(bubble, cell, fightModifier)
             else return bubble
         }
+        const fighters = Math.min(minUnitsOnBounce, bubble.units, cell.units)
+        cell.units -= fighters
+        bubble.units -= fighters
+        bubble.updateRadius()
         const dirToCell = normalize(difference(cell.position, bubble.position))
         if (dirToCell === null)
             return basicMechanics.collideCell(bubble, cell, fightModifier)
-        const n = onb(dirToCell)
         const newDirection = difference(
             bubble.direction,
             scalarMul(2 * mul(dirToCell, bubble.direction), dirToCell),
