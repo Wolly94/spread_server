@@ -60,6 +60,7 @@ class SpreadGameServer extends SocketServer<
             // maybe clients were created faster than they could be added to the game
             const inGameState = new InGameImplementation(
                 this.state.map,
+                this.state.gameSettings,
                 this.state.seatedPlayers,
                 (token, msg) => this.sendMessageToClientViaToken(token, msg),
                 (msg) => this.sendMessageToClients(msg),
@@ -68,7 +69,6 @@ class SpreadGameServer extends SocketServer<
             this.state.startGame()
             FindGameServerHandler.findGameServer?.updateClients()
         }
-        //clearInterval(this.intervalId)
     }
 
     onReceiveMessage(

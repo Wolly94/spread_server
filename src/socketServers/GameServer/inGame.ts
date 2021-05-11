@@ -8,22 +8,26 @@ import GameServerMessage, {
     ClientHumanPlayer,
     ClientLobbyPlayer,
     ClientObserver,
+    GameSettings,
     LobbyStateMessage,
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
+import basicMechanics from '../../spreadGame/basicMechanics'
 import bounceMechanics from '../../spreadGame/bounceMechanics'
+import scrapeOffMechanics from '../../spreadGame/scrapeOffMechanics'
 import {
     SpreadGame,
     SpreadGameImplementation,
 } from '../../spreadGame/spreadGame'
-import { AiPlayer, idFromToken, remainingSeats, SeatedPlayer } from './common'
+import { AiPlayer, idFromToken, SeatedPlayer } from './common'
 
 const updateFrequencyInMs = 20
 
 interface InGameState {
     type: 'ingame'
     map: SpreadMap
+    gameSettings: GameSettings
     seatedPlayers: SeatedPlayer[]
     aiClients: AiClient[] // last reference to these clients, to be deleted when finishing game
     gameState: SpreadGame
@@ -42,6 +46,7 @@ export type InGame = InGameState & InGameFunctions
 class InGameImplementation implements InGame {
     type: 'ingame' = 'ingame'
     map: SpreadMap
+    gameSettings: GameSettings
     seatedPlayers: SeatedPlayer[]
     aiClients: AiClient[]
     gameState: SpreadGame
@@ -54,6 +59,7 @@ class InGameImplementation implements InGame {
 
     constructor(
         map: SpreadMap,
+        settings: GameSettings,
         seatedPlayers: SeatedPlayer[],
         sendMessageToClient: (
             token: string,
@@ -63,9 +69,17 @@ class InGameImplementation implements InGame {
     ) {
         this.intervalId = null
         this.map = map
-        //this.gameState = new SpreadGameImplementation(map, basicMechanics)
-        //this.gameState = new SpreadGameImplementation(map, scrapeOffMechanics)
-        this.gameState = new SpreadGameImplementation(map, bounceMechanics)
+        this.gameSettings = settings
+        if (settings.mechanics === 'basic') {
+            this.gameState = new SpreadGameImplementation(map, basicMechanics)
+        } else if (settings.mechanics === 'scrapeoff') {
+            this.gameState = new SpreadGameImplementation(
+                map,
+                scrapeOffMechanics,
+            )
+        } else if (settings.mechanics === 'bounce') {
+            this.gameState = new SpreadGameImplementation(map, bounceMechanics)
+        } else throw Error('unregistered mechanics')
         this.seatedPlayers = seatedPlayers
         this.sendMessageToClientViaToken = sendMessageToClient
         this.sendMessage = sendMessage
@@ -120,7 +134,12 @@ class InGameImplementation implements InGame {
         const observers: ClientObserver[] = []
         const lobbyStateMessage: LobbyStateMessage = {
             type: 'lobbystate',
-            data: { map: this.map, players: players, observers: observers },
+            data: {
+                map: this.map,
+                players: players,
+                observers: observers,
+                gameSettings: this.gameSettings,
+            },
         }
         this.sendMessageToClientViaToken(token, lobbyStateMessage)
     }

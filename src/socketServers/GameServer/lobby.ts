@@ -10,6 +10,7 @@ import GameServerMessage, {
     ClientLobbyPlayer,
     ClientLobbyState,
     ClientObserver,
+    GameSettings,
     LobbyStateMessage,
     ServerLobbyMessage,
     SetPlayerIdMessage,
@@ -22,6 +23,7 @@ interface LobbyState {
     map: SpreadMap | null
     seatedPlayers: SeatedPlayer[]
     unseatedPlayers: RegisteredToken[]
+    gameSettings: GameSettings
 }
 
 interface LobbyFunctions {
@@ -36,6 +38,7 @@ export type Lobby = LobbyState & LobbyFunctions
 class LobbyImplementation implements Lobby {
     type: 'lobby' = 'lobby'
     map: SpreadMap | null
+    gameSettings: GameSettings
     seatedPlayers: SeatedPlayer[]
     unseatedPlayers: RegisteredToken[]
     sendMessageToClientViaToken: (
@@ -52,6 +55,7 @@ class LobbyImplementation implements Lobby {
         sendMessage: (msg: ServerLobbyMessage) => void,
     ) {
         this.map = null
+        this.gameSettings = { mechanics: 'basic' }
         this.seatedPlayers = []
         this.unseatedPlayers = []
         this.sendMessageToClientViaToken = sendMessageToClient
@@ -100,6 +104,7 @@ class LobbyImplementation implements Lobby {
             map: this.map,
             players,
             observers: observers,
+            gameSettings: this.gameSettings,
         }
         const msg: LobbyStateMessage = {
             type: 'lobbystate',

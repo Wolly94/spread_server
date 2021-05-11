@@ -1,6 +1,10 @@
 import { SpreadMap } from '../game/map'
 import { ClientGameState } from './clientGameState'
 
+export interface GameSettings {
+    mechanics: 'basic' | 'scrapeoff' | 'bounce'
+}
+
 export interface SetPlayerIdMessage {
     type: 'playerid'
     data: {
@@ -29,6 +33,7 @@ export interface ClientLobbyState {
     players: ClientLobbyPlayer[]
     observers: ClientObserver[]
     map: SpreadMap | null
+    gameSettings: GameSettings
 }
 
 export interface LobbyStateMessage {
