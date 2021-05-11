@@ -1,4 +1,3 @@
-import { radiusToUnits, radiusToUnitsFixPoint } from '../shared/game/common'
 import { distance } from '../shared/game/entites'
 import basicMechanics from './basicMechanics'
 import Bubble from './bubble'
@@ -53,7 +52,22 @@ const adjustedDirection = (
         mul(dirToTarget, bubbleDir),
         mul(n, bubbleDir),
     ]
+    const wrongSide = coords[0] < 0
     const wrongPart = coords[1]
+    if (wrongPart >= 0) {
+        return rotate(
+            bubbleDir,
+            -baseAngle * (wrongSide ? 2 - wrongPart : wrongPart),
+        )
+    } else {
+        return rotate(
+            bubbleDir,
+            +baseAngle * (wrongSide ? 2 + wrongPart : -wrongPart),
+        )
+    }
+    if (Math.abs(wrongPart) <= requiredAccuracy) {
+    }
+
     const scalar = wrongPart * dirMistake
     const angle = scalar * baseAngle
     return rotate(bubbleDir, angle)
