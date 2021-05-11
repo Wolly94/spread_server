@@ -1,4 +1,5 @@
 import { SpreadMap } from '../game/map'
+import { GameSettings } from './gameServerMessages'
 
 export interface SetMapMessage {
     type: 'setmap'
@@ -25,9 +26,15 @@ export interface ClearSeatMessage {
     data: { playerId: number }
 }
 
+export interface SetGameSettingsMessage {
+    type: 'gamesettings'
+    data: GameSettings
+}
+
 export type ClientLobbyMessage =
     | SetMapMessage
     | StartGameMessage
     | TakeSeatMessage
     | SeatAiMessage
     | ClearSeatMessage
+    | SetGameSettingsMessage
