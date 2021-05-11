@@ -76,7 +76,9 @@ const bounceMechanics: SpreadGameMechanics = {
         bubble2: Bubble,
         fightModifier: FightModifier,
     ) => {
-        return basicMechanics.collideBubble(bubble1, bubble2, fightModifier)
+        if (basicMechanics.collides(bubble1, bubble2))
+            return basicMechanics.collideBubble(bubble1, bubble2, fightModifier)
+        else return [bubble1, bubble2]
     },
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
         // bubble reached its destiny?
@@ -86,9 +88,13 @@ const bounceMechanics: SpreadGameMechanics = {
             else return bubble
         }
         const fighters = Math.min(minUnitsOnBounce, bubble.units, cell.units)
-        cell.units -= fighters
         bubble.units -= fighters
         bubble.updateRadius()
+        if (cell.playerId === bubble.playerId) {
+            cell.units += fighters
+        } else {
+            cell.units -= fighters
+        }
         const dirToCell = normalize(difference(cell.position, bubble.position))
         if (dirToCell === null)
             return basicMechanics.collideCell(bubble, cell, fightModifier)

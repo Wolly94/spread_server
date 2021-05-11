@@ -76,6 +76,9 @@ class LobbyImplementation implements Lobby {
         } else if (message.type === 'seatai') {
             const playerId = message.data.playerId
             this.seatAi(token, playerId)
+        } else if (message.type === 'gamesettings') {
+            this.gameSettings = message.data
+            this.updateClients()
         }
     }
 
