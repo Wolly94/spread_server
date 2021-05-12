@@ -13,10 +13,9 @@ import GameServerMessage, {
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
-import SpreadReplay, { HistoryEntry, Move } from '../../shared/replay/replay'
-import basicMechanics from '../../spreadGame/mechanics/basicMechanics'
-import bounceMechanics from '../../spreadGame/mechanics/bounceMechanics'
-import scrapeOffMechanics from '../../spreadGame/mechanics/scrapeOffMechanics'
+import { GetReplayMessage } from '../../shared/replay/clientReplayMessages'
+import { HistoryEntry, Move } from '../../shared/replay/replay'
+import { SendReplayMessage } from '../../shared/replay/serverReplayMessages'
 import {
     SpreadGame,
     SpreadGameImplementation,
@@ -38,7 +37,10 @@ interface InGameState {
 interface InGameFunctions {
     startGame: () => void
     stop: () => void
-    onReceiveMessage: (token: string, message: ClientInGameMessage) => void
+    onReceiveMessage: (
+        token: string,
+        message: ClientInGameMessage | GetReplayMessage,
+    ) => void
     onConnect: (token: string, playerData: PlayerData) => void
 }
 
@@ -144,7 +146,10 @@ class InGameImplementation implements InGame {
         this.sendMessageToClientViaToken(token, lobbyStateMessage)
     }
 
-    onReceiveMessage(token: string, message: ClientInGameMessage) {
+    onReceiveMessage(
+        token: string,
+        message: ClientInGameMessage | GetReplayMessage,
+    ) {
         if (message.type === 'sendunits' && this.isRunning()) {
             const playerId = idFromToken(token, this.seatedPlayers)
             if (playerId != null) {
@@ -156,6 +161,13 @@ class InGameImplementation implements InGame {
                 )
                 console.log('message received and attack sent: ' + message)
             }
+        } else if (message.type === 'getreplay') {
+            const rep = this.gameState.getReplay()
+            const mess: SendReplayMessage = {
+                type: 'sendreplay',
+                data: rep,
+            }
+            this.sendMessageToClientViaToken(token, mess)
         }
     }
 

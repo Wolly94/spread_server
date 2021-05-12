@@ -1,4 +1,5 @@
 import { SpreadMap } from '../game/map'
+import { SendReplayMessage } from '../replay/serverReplayMessages'
 import { ClientGameState } from './clientGameState'
 
 export type GameMechanics = 'basic' | 'scrapeoff' | 'bounce'
@@ -64,7 +65,10 @@ export interface GameOverMessage {
 export type ServerLobbyMessage = SetPlayerIdMessage | LobbyStateMessage
 export type ServerInGameMessage = GameStateMessage | GameOverMessage
 
-type GameServerMessage = ServerLobbyMessage | ServerInGameMessage
+type GameServerMessage =
+    | ServerLobbyMessage
+    | ServerInGameMessage
+    | SendReplayMessage
 
 export const isServerLobbyMessage = (
     msg: GameServerMessage,
