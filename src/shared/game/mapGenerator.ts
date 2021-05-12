@@ -28,7 +28,7 @@ const getStartingUnits = (saturated: number) => {
     const x01 = Math.random()
     const xCapped = lowerPart + x01 * (maxPart - lowerPart)
     const xCappedM11 = 2 * (xCapped - 1 / 2)
-    const v = saturated * (xCappedM11 ** 11 + 1)
+    const v = (saturated / 2) * (xCappedM11 ** 11 + 1)
     const result = Math.ceil(v)
     return result
 }
