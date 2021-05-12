@@ -1,6 +1,6 @@
+import { radiusToUnits } from './common'
 import {
     addCellToMap,
-    availableSpace,
     availableSpaceFromPosition,
     emptyMap,
     MapCell,
@@ -20,6 +20,17 @@ const calculateDensity = (map: SpreadMap) => {
         return coveredSpace + Math.PI * cell.radius ** 2
     }, 0)
     return covered / (map.width * map.height)
+}
+
+const getStartingUnits = (saturated: number) => {
+    const lowerPart = 1 / 8
+    const maxPart = 1 - lowerPart
+    const x01 = Math.random()
+    const xCapped = lowerPart + x01 * (maxPart - lowerPart)
+    const xCappedM11 = 2 * (xCapped - 1 / 2)
+    const v = saturated * (xCappedM11 ** 7 + 1)
+    const result = Math.ceil(v)
+    return result
 }
 
 export const generate2PlayerMap = (squareSideLength: number) => {
@@ -54,7 +65,6 @@ export const generate2PlayerMap = (squareSideLength: number) => {
                 cellRadii[0] / radiusAccuracy,
                 cellRadii[1] / radiusAccuracy,
             ) * radiusAccuracy
-        const units = getRandomIntInclusive(radius / 8, radius)
         let x = getRandomIntInclusive(0, half)
         let y = getRandomIntInclusive(0, 2 * half)
         const avSpace = availableSpaceFromPosition(map, [x, y])
@@ -69,12 +79,24 @@ export const generate2PlayerMap = (squareSideLength: number) => {
             id: cellId,
             playerId: centered ? null : playerId,
             radius: radius,
-            units: units,
+            units: 0,
             position: [x, y],
         }
         const r = addCellToMap(cell1, map)
         if (r.error !== null) continue
+        //const units = getRandomIntInclusive(radius / 8, radius)
         map = r.map
+
+        const createdCellIndex = map.cells.findIndex((c) => c.id === cell1.id)
+        if (createdCellIndex < 0) continue
+        else {
+            const units = getStartingUnits(
+                radiusToUnits(map.cells[createdCellIndex].radius),
+            )
+            map.cells[createdCellIndex].units = units
+            cell1.units = units
+        }
+
         cellId = cellId + 1
         if (!centered) {
             const rotatedPosition: [number, number] = [
