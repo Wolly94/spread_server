@@ -6,11 +6,44 @@ import { FightModifier } from '../spreadGame'
 import basicMechanics from './basicMechanics'
 import {
     calculationAccuracy,
-    centerOverlap,
+    fight,
     minOverlap,
     overlap,
+    reinforceCell,
     SpreadGameMechanics,
+    takeOverCell,
 } from './commonMechanics'
+
+export const fightBubblePartial = (
+    att: number,
+    def: number,
+    fightModifier: FightModifier,
+    dist: number,
+): [number | null, number | null] => {
+    const unitDiff = att - def
+    const maxUnits = radiusToUnits(dist)
+    if (unitDiff >= maxUnits) {
+        return [
+            ((unitDiff + maxUnits) / (2 * dist)) ** 2 * radiusToUnitsFixPoint,
+            null,
+        ]
+    } else if (unitDiff <= -maxUnits) {
+        return [
+            null,
+            ((-unitDiff + maxUnits) / (2 * dist)) ** 2 * radiusToUnitsFixPoint,
+        ]
+    } else {
+        return [
+            ((unitDiff + maxUnits) / (2 * dist)) ** 2 * radiusToUnitsFixPoint,
+            ((-unitDiff + maxUnits) / (2 * dist)) ** 2 * radiusToUnitsFixPoint,
+        ]
+    }
+}
+
+export const cellFighters = (bubbleUnits: number, bubbleSpace: number) => {
+    const fighters = bubbleUnits - radiusToUnits(bubbleSpace)
+    return fighters
+}
 
 const scrapeOffMechanics: SpreadGameMechanics = {
     collideBubble: (
@@ -22,52 +55,38 @@ const scrapeOffMechanics: SpreadGameMechanics = {
             return [bubble1, bubble2]
         if (bubble1.playerId === bubble2.playerId) return [bubble1, bubble2]
         const dist = distance(bubble1.position, bubble2.position)
-        const unitDiff = bubble1.units - bubble2.units
-        const maxUnits = radiusToUnits(dist)
-        if (unitDiff >= maxUnits) {
-            bubble1.units =
-                ((unitDiff + maxUnits) / (2 * dist)) ** 2 *
-                radiusToUnitsFixPoint
+        const [u1, u2] = fightBubblePartial(
+            bubble1.units,
+            bubble2.units,
+            fightModifier,
+            dist,
+        )
+        if (u1 !== null) {
+            bubble1.units = u1
             bubble1.updateRadius()
-            return [bubble1, null]
-        } else if (unitDiff <= -maxUnits) {
-            bubble2.units =
-                ((-unitDiff + maxUnits) / (2 * dist)) ** 2 *
-                radiusToUnitsFixPoint
-            bubble2.updateRadius()
-            return [null, bubble2]
-        } else {
-            bubble1.units =
-                ((unitDiff + maxUnits) / (2 * dist)) ** 2 *
-                radiusToUnitsFixPoint
-            bubble1.updateRadius()
-            bubble2.units =
-                ((-unitDiff + maxUnits) / (2 * dist)) ** 2 *
-                radiusToUnitsFixPoint
-            bubble2.updateRadius()
-            return [bubble1, bubble2]
         }
+        if (u2 !== null) {
+            bubble2.units = u2
+            bubble2.updateRadius()
+        }
+        return [u1 !== null ? bubble1 : null, u2 !== null ? bubble2 : null]
     },
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
         if (overlap(bubble, cell) < minOverlap + calculationAccuracy)
             return bubble
         // if collides returns true, then dist <= bubble.radius
-        const dist = centerOverlap(bubble, cell)
-        if (dist <= calculationAccuracy) {
+        const bubbleSpace =
+            distance(bubble.position, cell.position) - cell.radius
+        if (bubbleSpace <= calculationAccuracy) {
             return basicMechanics.collideCell(bubble, cell, fightModifier)
         } else {
-            const fighters = bubble.units - radiusToUnits(dist)
+            const fighters = cellFighters(bubble.units, bubbleSpace)
             // fighters >= here
             if (bubble.playerId === cell.playerId) {
-                cell.units += fighters
+                reinforceCell(cell, fighters)
             } else {
-                const rem = cell.units - fighters
-                if (rem < 0) {
-                    cell.playerId = bubble.playerId
-                    cell.units = -rem
-                } else {
-                    cell.units = rem
-                }
+                const result = fight(fighters, cell.units, fightModifier)
+                takeOverCell(cell, result, bubble.playerId)
             }
             bubble.units -= fighters
             bubble.updateRadius()

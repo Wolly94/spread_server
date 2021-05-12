@@ -6,6 +6,31 @@ import { FightModifier } from '../spreadGame'
 export const calculationAccuracy = 0.01
 export const minOverlap = 5
 
+export const fight = (
+    att: number,
+    def: number,
+    fightModifier: FightModifier,
+): number => {
+    return att - def
+}
+
+export const takeOverCell = (
+    cell: Cell,
+    newCellUnits: number,
+    enemyPlayerId: number,
+) => {
+    if (newCellUnits > calculationAccuracy) {
+        cell.units = newCellUnits
+        cell.playerId = enemyPlayerId
+    } else {
+        cell.units = -newCellUnits
+    }
+}
+
+export const reinforceCell = (cell: Cell, units: number) => {
+    cell.units += units
+}
+
 export const overlap = (b: Bubble, e: Bubble | Cell) => {
     return b.radius + e.radius - distance(b.position, e.position)
 }

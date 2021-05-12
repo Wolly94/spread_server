@@ -5,21 +5,11 @@ import { FightModifier } from '../spreadGame'
 import {
     calculationAccuracy,
     centerOverlap,
-    centerOverlapDistance,
+    fight,
+    reinforceCell,
     SpreadGameMechanics,
+    takeOverCell,
 } from './commonMechanics'
-
-export const fight = (
-    att: number,
-    def: number,
-    fightModifier: FightModifier,
-): number => {
-    return att - def
-}
-
-export const reinforce = (sender: number, receiver: number) => {
-    return sender + receiver
-}
 
 const basicMechanics: SpreadGameMechanics = {
     collideBubble: (
@@ -33,7 +23,7 @@ const basicMechanics: SpreadGameMechanics = {
         // return
         if (bubble1.playerId === bubble2.playerId) return [bubble1, bubble2]
         const result = fight(bubble1.units, bubble2.units, fightModifier)
-        if (result === 0) {
+        if (Math.abs(result) < calculationAccuracy) {
             return [null, null]
         } else if (result > 0) {
             bubble1.units = result
@@ -48,15 +38,10 @@ const basicMechanics: SpreadGameMechanics = {
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
         if (centerOverlap(bubble, cell) < calculationAccuracy) return bubble
         if (bubble.playerId === cell.playerId) {
-            cell.units = reinforce(bubble.units, cell.units)
+            reinforceCell(cell, bubble.units)
         } else {
             const result = fight(cell.units, bubble.units, fightModifier)
-            if (result >= 0) {
-                cell.units = result
-            } else {
-                cell.units = -result
-                cell.playerId = bubble.playerId
-            }
+            takeOverCell(cell, result, bubble.playerId)
         }
         return null
     },

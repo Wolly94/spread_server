@@ -5,9 +5,12 @@ import { FightModifier } from '../spreadGame'
 import basicMechanics from './basicMechanics'
 import {
     calculationAccuracy,
+    fight,
     minOverlap,
     overlap,
+    reinforceCell,
     SpreadGameMechanics,
+    takeOverCell,
 } from './commonMechanics'
 import scrapeOffMechanics from './scrapeOffMechanics'
 
@@ -89,9 +92,10 @@ const bounceMechanics: SpreadGameMechanics = {
         bubble.units -= fighters
         bubble.updateRadius()
         if (cell.playerId === bubble.playerId) {
-            cell.units += fighters
+            reinforceCell(cell, fighters)
         } else {
-            cell.units -= fighters
+            const cellRem = fight(fighters, cell.units, fightModifier)
+            takeOverCell(cell, cellRem, bubble.playerId)
         }
         const dirToCell = normalize(difference(cell.position, bubble.position))
         if (dirToCell === null)
