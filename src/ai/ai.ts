@@ -1,7 +1,6 @@
 import { ClientCell, ClientGameState } from '../shared/inGame/clientGameState'
 import { SendUnitsMessage } from '../shared/inGame/clientInGameMessage'
-
-type Move = SendUnitsMessage
+import { Move } from '../shared/replay/replay'
 
 export interface Ai {
     getMove: (state: ClientGameState, playerId: number) => Move | null
