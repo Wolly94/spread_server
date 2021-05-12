@@ -40,7 +40,7 @@ const basicMechanics: SpreadGameMechanics = {
         if (bubble.playerId === cell.playerId) {
             reinforceCell(cell, bubble.units)
         } else {
-            const result = fight(cell.units, bubble.units, fightModifier)
+            const result = fight(bubble.units, cell.units, fightModifier)
             takeOverCell(cell, result, bubble.playerId)
         }
         return null

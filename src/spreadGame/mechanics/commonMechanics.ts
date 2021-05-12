@@ -4,7 +4,7 @@ import Cell from '../cell'
 import { FightModifier } from '../spreadGame'
 
 export const calculationAccuracy = 0.01
-export const minOverlap = 5
+export const minOverlap = 2
 
 export const fight = (
     att: number,
