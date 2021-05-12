@@ -40,7 +40,6 @@ interface InGameFunctions {
     stop: () => void
     onReceiveMessage: (token: string, message: ClientInGameMessage) => void
     onConnect: (token: string, playerData: PlayerData) => void
-    getReplay: () => SpreadReplay
 }
 
 export type InGame = InGameState & InGameFunctions
@@ -74,14 +73,11 @@ class InGameImplementation implements InGame {
         this.map = map
         this.gameSettings = settings
         if (settings.mechanics === 'basic') {
-            this.gameState = new SpreadGameImplementation(map, basicMechanics)
+            this.gameState = new SpreadGameImplementation(map, settings)
         } else if (settings.mechanics === 'scrapeoff') {
-            this.gameState = new SpreadGameImplementation(
-                map,
-                scrapeOffMechanics,
-            )
+            this.gameState = new SpreadGameImplementation(map, settings)
         } else if (settings.mechanics === 'bounce') {
-            this.gameState = new SpreadGameImplementation(map, bounceMechanics)
+            this.gameState = new SpreadGameImplementation(map, settings)
         } else throw Error('unregistered mechanics')
         this.moveHistory = []
         this.seatedPlayers = seatedPlayers
@@ -97,15 +93,6 @@ class InGameImplementation implements InGame {
                 const aiClient = new AiClient(sp.playerId, ai)
                 return aiClient
             })
-    }
-
-    getReplay() {
-        const rep: SpreadReplay = {
-            map: this.map,
-            gameSettings: this.gameSettings,
-            moveHistory: this.moveHistory,
-        }
-        return rep
     }
 
     isRunning() {

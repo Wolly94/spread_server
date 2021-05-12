@@ -1,9 +1,24 @@
 import { getPlayerIds, SpreadMap } from '../shared/game/map'
 import { ClientGameState } from '../shared/inGame/clientGameState'
+import { GameSettings } from '../shared/inGame/gameServerMessages'
+import SpreadReplay, { HistoryEntry, Move } from '../shared/replay/replay'
 import Bubble from './bubble'
 import Cell from './cell'
+import basicMechanics from './mechanics/basicMechanics'
+import bounceMechanics from './mechanics/bounceMechanics'
 import { SpreadGameMechanics } from './mechanics/commonMechanics'
+import scrapeOffMechanics from './mechanics/scrapeOffMechanics'
 import Player from './player'
+
+const getMechanics = (settings: GameSettings): SpreadGameMechanics => {
+    if (settings.mechanics === 'basic') {
+        return basicMechanics
+    } else if (settings.mechanics === 'scrapeoff') {
+        return scrapeOffMechanics
+    } else if (settings.mechanics === 'bounce') {
+        return bounceMechanics
+    } else throw Error('unregistered mechanics')
+}
 
 export interface SpreadGameState {
     cells: Cell[]
@@ -22,6 +37,7 @@ export interface SpreadGameInteraction {
 export interface SpreadGameFunctions {
     step: (ms: number) => void
     toClientGameState: () => ClientGameState
+    getReplay: () => SpreadReplay
 }
 
 export interface FightModifier {}
@@ -31,14 +47,20 @@ export type SpreadGame = SpreadGameState &
     SpreadGameInteraction
 
 export class SpreadGameImplementation implements SpreadGame {
+    map: SpreadMap
+    gameSettings: GameSettings
     cells: Cell[]
     bubbles: Bubble[]
     players: Player[]
+    pastMoves: HistoryEntry<Move>[]
     mechanics: SpreadGameMechanics
+    timePassed: number
 
-    constructor(map: SpreadMap, gameMechanics: SpreadGameMechanics) {
+    constructor(map: SpreadMap, gameSettings: GameSettings) {
         const players = getPlayerIds(map)
-        this.mechanics = gameMechanics
+        this.gameSettings = gameSettings
+        this.mechanics = getMechanics(gameSettings)
+        this.map = map
         this.cells = map.cells.map((mapCell) => {
             const cell: Cell = new Cell(
                 mapCell.id,
@@ -53,6 +75,18 @@ export class SpreadGameImplementation implements SpreadGame {
         this.players = Array.from(players).map((id) => {
             return { id: id }
         })
+        this.timePassed = 0
+        this.pastMoves = []
+    }
+
+    getReplay() {
+        const rep: SpreadReplay = {
+            map: this.map,
+            gameSettings: this.gameSettings,
+            moveHistory: this.pastMoves,
+            players: this.players,
+        }
+        return rep
     }
 
     step(ms: number) {
@@ -62,6 +96,7 @@ export class SpreadGameImplementation implements SpreadGame {
         })
         this.collideBubblesWithCells()
         this.collideBubblesWithBubbles()
+        this.timePassed += ms
     }
 
     collideBubblesWithBubbles() {
@@ -110,21 +145,37 @@ export class SpreadGameImplementation implements SpreadGame {
     }
     sendUnits(playerId: number, senderIds: number[], receiverId: number) {
         const player = this.players.find((p) => p.id == playerId)
-        if (player == undefined) return
+        if (player == undefined) return false
         const targetCell = this.cells.find((c) => c.id == receiverId)
-        if (targetCell == undefined) return
-        senderIds.forEach((senderId) => {
+        if (targetCell == undefined) return false
+        const sentIds = senderIds.filter((senderId) => {
             const sender = this.cells.find(
                 (c) =>
                     c.id == senderId &&
                     c.playerId == playerId &&
                     senderId != receiverId,
             )
-            if (sender == undefined) return
+            if (sender == undefined) return false
             const bubble = sender.trySend(targetCell)
-            if (bubble != null) this.bubbles.push(bubble)
+            if (bubble != null) {
+                this.bubbles.push(bubble)
+                return true
+            } else {
+                return false
+            }
+        })
+        this.pastMoves.push({
+            timestamp: this.timePassed,
+            data: {
+                type: 'sendunits',
+                data: {
+                    receiverId: targetCell.id,
+                    senderIds: sentIds,
+                },
+            },
         })
     }
+
     toClientGameState() {
         const gs: ClientGameState = {
             cells: this.cells.map((cell) => {
