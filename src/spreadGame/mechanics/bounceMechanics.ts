@@ -1,8 +1,15 @@
-import { distance } from '../shared/game/entites'
+import { distance } from '../../shared/game/entites'
+import Bubble from '../bubble'
+import Cell from '../cell'
+import { FightModifier } from '../spreadGame'
 import basicMechanics from './basicMechanics'
-import Bubble from './bubble'
-import Cell from './cell'
-import { SpreadGameMechanics, FightModifier } from './spreadGame'
+import {
+    calculationAccuracy,
+    minOverlap,
+    overlap,
+    SpreadGameMechanics,
+} from './commonMechanics'
+import scrapeOffMechanics from './scrapeOffMechanics'
 
 const minUnitsOnBounce = 1
 
@@ -65,28 +72,19 @@ const adjustedDirection = (
 }
 
 const bounceMechanics: SpreadGameMechanics = {
-    collides: (bubble: Bubble, entity: Bubble | Cell) => {
-        return (
-            distance(bubble.position, entity.position) <=
-            bubble.radius + entity.radius
-        )
-    },
     collideBubble: (
         bubble1: Bubble,
         bubble2: Bubble,
         fightModifier: FightModifier,
     ) => {
-        if (basicMechanics.collides(bubble1, bubble2))
-            return basicMechanics.collideBubble(bubble1, bubble2, fightModifier)
-        else return [bubble1, bubble2]
+        return scrapeOffMechanics.collideBubble(bubble1, bubble2, fightModifier)
     },
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
         // bubble reached its destiny?
         if (bubble.targetId === cell.id) {
-            if (basicMechanics.collides(bubble, cell))
-                return basicMechanics.collideCell(bubble, cell, fightModifier)
-            else return bubble
+            return basicMechanics.collideCell(bubble, cell, fightModifier)
         }
+        if (overlap(bubble, cell) < calculationAccuracy) return bubble
         const fighters = Math.min(minUnitsOnBounce, bubble.units, cell.units)
         bubble.units -= fighters
         bubble.updateRadius()

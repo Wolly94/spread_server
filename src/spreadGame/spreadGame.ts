@@ -2,6 +2,7 @@ import { getPlayerIds, SpreadMap } from '../shared/game/map'
 import { ClientGameState } from '../shared/inGame/clientGameState'
 import Bubble from './bubble'
 import Cell from './cell'
+import { SpreadGameMechanics } from './mechanics/commonMechanics'
 import Player from './player'
 
 export interface SpreadGameState {
@@ -24,21 +25,6 @@ export interface SpreadGameFunctions {
 }
 
 export interface FightModifier {}
-
-export interface SpreadGameMechanics {
-    collideBubble: (
-        bubble1: Bubble,
-        bubble2: Bubble,
-        fightModifier: FightModifier,
-    ) => [Bubble | null, Bubble | null]
-    collideCell: (
-        bubble: Bubble,
-        cell: Cell,
-        fightModifier: FightModifier,
-    ) => Bubble | null
-    collides: (bubble: Bubble, entity: Bubble | Cell) => boolean
-    move: (bubble: Bubble, ms: number) => Bubble
-}
 
 export type SpreadGame = SpreadGameState &
     SpreadGameFunctions &
@@ -83,10 +69,7 @@ export class SpreadGameImplementation implements SpreadGame {
         this.bubbles.forEach((bubble) => {
             var currentBubble: Bubble | null = bubble
             remainingBubbles = remainingBubbles.filter((bubble2) => {
-                if (
-                    currentBubble != null &&
-                    this.mechanics.collides(currentBubble, bubble2)
-                ) {
+                if (currentBubble != null) {
                     const [rem1, rem2] = this.mechanics.collideBubble(
                         bubble2,
                         currentBubble,
@@ -109,7 +92,6 @@ export class SpreadGameImplementation implements SpreadGame {
             this.cells.forEach((cell) => {
                 if (
                     currentBubble != null &&
-                    this.mechanics.collides(currentBubble, cell) &&
                     (currentBubble.motherId !== cell.id ||
                         currentBubble.playerId !== cell.playerId)
                 ) {

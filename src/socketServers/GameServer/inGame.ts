@@ -13,9 +13,9 @@ import GameServerMessage, {
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
-import basicMechanics from '../../spreadGame/basicMechanics'
-import bounceMechanics from '../../spreadGame/bounceMechanics'
-import scrapeOffMechanics from '../../spreadGame/scrapeOffMechanics'
+import basicMechanics from '../../spreadGame/mechanics/basicMechanics'
+import bounceMechanics from '../../spreadGame/mechanics/bounceMechanics'
+import scrapeOffMechanics from '../../spreadGame/mechanics/scrapeOffMechanics'
 import {
     SpreadGame,
     SpreadGameImplementation,

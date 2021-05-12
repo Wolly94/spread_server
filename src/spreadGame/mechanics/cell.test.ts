@@ -1,5 +1,5 @@
-import { radiusToUnits } from '../shared/game/common'
-import Cell from '../spreadGame/cell'
+import { radiusToUnits } from '../../shared/game/common'
+import Cell from '../cell'
 
 test('units decreasing when too much', () => {
     const radius = 50

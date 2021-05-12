@@ -1,7 +1,13 @@
-import { distance } from '../shared/game/entites'
-import Bubble from './bubble'
-import Cell from './cell'
-import { FightModifier, SpreadGameMechanics } from './spreadGame'
+import { distance } from '../../shared/game/entites'
+import Bubble from '../bubble'
+import Cell from '../cell'
+import { FightModifier } from '../spreadGame'
+import {
+    calculationAccuracy,
+    centerOverlap,
+    centerOverlapDistance,
+    SpreadGameMechanics,
+} from './commonMechanics'
 
 export const fight = (
     att: number,
@@ -16,17 +22,13 @@ export const reinforce = (sender: number, receiver: number) => {
 }
 
 const basicMechanics: SpreadGameMechanics = {
-    collides: (bubble: Bubble, entity: Bubble | Cell) => {
-        return (
-            distance(bubble.position, entity.position) <=
-            Math.max(bubble.radius, entity.radius)
-        )
-    },
     collideBubble: (
         bubble1: Bubble,
         bubble2: Bubble,
         fightModifier: FightModifier,
     ) => {
+        if (centerOverlap(bubble1, bubble2) < calculationAccuracy)
+            return [bubble1, bubble2]
         // TODO modify 'this' accordingly
         // return
         if (bubble1.playerId === bubble2.playerId) return [bubble1, bubble2]
@@ -44,6 +46,7 @@ const basicMechanics: SpreadGameMechanics = {
         }
     },
     collideCell: (bubble: Bubble, cell: Cell, fightModifier: FightModifier) => {
+        if (centerOverlap(bubble, cell) < calculationAccuracy) return bubble
         if (bubble.playerId === cell.playerId) {
             cell.units = reinforce(bubble.units, cell.units)
         } else {
