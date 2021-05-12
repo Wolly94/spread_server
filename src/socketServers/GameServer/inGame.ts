@@ -13,6 +13,7 @@ import GameServerMessage, {
     ServerInGameMessage,
     SetPlayerIdMessage,
 } from '../../shared/inGame/gameServerMessages'
+import SpreadReplay, { HistoryEntry, Move } from '../../shared/replay/replay'
 import basicMechanics from '../../spreadGame/mechanics/basicMechanics'
 import bounceMechanics from '../../spreadGame/mechanics/bounceMechanics'
 import scrapeOffMechanics from '../../spreadGame/mechanics/scrapeOffMechanics'
@@ -39,6 +40,7 @@ interface InGameFunctions {
     stop: () => void
     onReceiveMessage: (token: string, message: ClientInGameMessage) => void
     onConnect: (token: string, playerData: PlayerData) => void
+    getReplay: () => SpreadReplay
 }
 
 export type InGame = InGameState & InGameFunctions
@@ -51,6 +53,7 @@ class InGameImplementation implements InGame {
     aiClients: AiClient[]
     gameState: SpreadGame
     intervalId: NodeJS.Timeout | null
+    moveHistory: HistoryEntry<Move>[]
     sendMessageToClientViaToken: (
         token: string,
         message: GameServerMessage,
@@ -80,6 +83,7 @@ class InGameImplementation implements InGame {
         } else if (settings.mechanics === 'bounce') {
             this.gameState = new SpreadGameImplementation(map, bounceMechanics)
         } else throw Error('unregistered mechanics')
+        this.moveHistory = []
         this.seatedPlayers = seatedPlayers
         this.sendMessageToClientViaToken = sendMessageToClient
         this.sendMessage = sendMessage
@@ -93,6 +97,15 @@ class InGameImplementation implements InGame {
                 const aiClient = new AiClient(sp.playerId, ai)
                 return aiClient
             })
+    }
+
+    getReplay() {
+        const rep: SpreadReplay = {
+            map: this.map,
+            gameSettings: this.gameSettings,
+            moveHistory: this.moveHistory,
+        }
+        return rep
     }
 
     isRunning() {
