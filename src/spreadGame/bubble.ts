@@ -30,7 +30,7 @@ export default class Bubble {
         this.direction = direction
         this.units = units
         this.motherId = motherId
-        this.speed = 100
+        this.speed = 90
         this.targetId = targetId
         this.targetPos = targetPos
         this.radius = unitsToRadius(units)
