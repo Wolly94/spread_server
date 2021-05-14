@@ -1,19 +1,20 @@
-import WebSocket from 'ws'
+import ClientMessage from 'spread_game/dist/messages/clientMessage'
+import { OpenGame } from 'spread_game/dist/messages/findGame/findGameServerMessages'
 import {
-    getPlayerData,
-    PlayerData,
-} from '../../registration/registrationHandler'
-import ClientMessage from '../../shared/clientMessage'
-import { OpenGame } from '../../shared/findGame/findGameServerMessages'
-import GameClientMessageData, {
+    GameClientMessageData,
     isClientLobbyMessage,
-} from '../../shared/inGame/gameClientMessages'
-import GameServerMessage from '../../shared/inGame/gameServerMessages'
+} from 'spread_game/dist/messages/inGame/gameClientMessages'
+import { GameServerMessage } from 'spread_game/dist/messages/inGame/gameServerMessages'
+import {
+    PlayerData,
+    getPlayerData,
+} from '../../registration/registrationHandler'
 import FindGameServerHandler from '../findGameServerHandler'
 import GameServerHandler from '../gameServerHandler'
 import SocketServer from '../socketServer'
 import InGameImplementation, { InGame } from './inGame'
 import LobbyImplementation, { Lobby } from './lobby'
+import WebSocket from 'ws'
 
 interface ConnectedPlayer {
     token: string
@@ -33,7 +34,7 @@ class SpreadGameServer extends SocketServer<
         super(port)
         this.connectedPlayers = []
 
-        const lobby = new LobbyImplementation(
+        const lobby: Lobby = new LobbyImplementation(
             (token, msg) => this.sendMessageToClientViaToken(token, msg),
             (msg) => this.sendMessageToClients(msg),
         )

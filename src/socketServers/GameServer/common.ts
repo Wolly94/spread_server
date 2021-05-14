@@ -1,6 +1,5 @@
-import AiClient from '../../ai/aiClient'
+import { SpreadMap, getPlayerIds } from 'spread_game/dist/spreadGame/map/map'
 import { PlayerData } from '../../registration/registrationHandler'
-import { getPlayerIds, SpreadMap } from '../../shared/game/map'
 
 export interface AiPlayer {
     type: 'ai'

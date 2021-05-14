@@ -1,20 +1,21 @@
+import { ClientLobbyMessage } from 'spread_game/dist/messages/inGame/clientLobbyMessage'
+import {
+    GameSettings,
+    ServerLobbyMessage,
+    ClientLobbyPlayer,
+    ClientAiPlayer,
+    ClientHumanPlayer,
+    ClientObserver,
+    ClientLobbyState,
+    LobbyStateMessage,
+    SetPlayerIdMessage,
+} from 'spread_game/dist/messages/inGame/gameServerMessages'
+import GameServerMessage from 'spread_game/dist/messages/replay/serverReplayMessages'
+import { SpreadMap, getPlayerIds } from 'spread_game/dist/spreadGame/map/map'
 import {
     PlayerData,
     RegisteredToken,
 } from '../../registration/registrationHandler'
-import { getPlayerIds, SpreadMap } from '../../shared/game/map'
-import { ClientLobbyMessage } from '../../shared/inGame/clientLobbyMessage'
-import GameServerMessage, {
-    ClientAiPlayer,
-    ClientHumanPlayer,
-    ClientLobbyPlayer,
-    ClientLobbyState,
-    ClientObserver,
-    GameSettings,
-    LobbyStateMessage,
-    ServerLobbyMessage,
-    SetPlayerIdMessage,
-} from '../../shared/inGame/gameServerMessages'
 import FindGameServerHandler from '../findGameServerHandler'
 import { AiPlayer, HumanPlayer, remainingSeats, SeatedPlayer } from './common'
 

@@ -1,26 +1,25 @@
-import { GreedyAi } from '../../ai/ai'
-import AiClient from '../../ai/aiClient'
-import { PlayerData } from '../../registration/registrationHandler'
-import { SpreadMap } from '../../shared/game/map'
-import { ClientInGameMessage } from '../../shared/inGame/clientInGameMessage'
-import GameServerMessage, {
-    ClientAiPlayer,
-    ClientHumanPlayer,
-    ClientLobbyPlayer,
-    ClientObserver,
+import { GreedyAi } from 'spread_game/dist/ai/ai'
+import AiClient from 'spread_game/dist/ai/aiClient'
+import { ClientInGameMessage } from 'spread_game/dist/messages/inGame/clientInGameMessage'
+import {
     GameSettings,
-    LobbyStateMessage,
+    GameServerMessage,
     ServerInGameMessage,
     SetPlayerIdMessage,
-} from '../../shared/inGame/gameServerMessages'
-import { GetReplayMessage } from '../../shared/replay/clientReplayMessages'
-import { HistoryEntry, Move } from '../../shared/replay/replay'
-import { SendReplayMessage } from '../../shared/replay/serverReplayMessages'
-import {
-    SpreadGame,
-    SpreadGameImplementation,
-} from '../../spreadGame/spreadGame'
-import { AiPlayer, idFromToken, SeatedPlayer } from './common'
+    ClientLobbyPlayer,
+    ClientAiPlayer,
+    ClientHumanPlayer,
+    ClientObserver,
+    LobbyStateMessage,
+} from 'spread_game/dist/messages/inGame/gameServerMessages'
+import { GetReplayMessage } from 'spread_game/dist/messages/replay/clientReplayMessages'
+import { HistoryEntry, Move } from 'spread_game/dist/messages/replay/replay'
+import { SendReplayMessage } from 'spread_game/dist/messages/replay/serverReplayMessages'
+import { SpreadGameImplementation } from 'spread_game/dist/spreadGame'
+import { SpreadMap } from 'spread_game/dist/spreadGame/map/map'
+import { SpreadGame } from 'spread_game/dist/spreadGame/spreadGame'
+import { PlayerData } from '../../registration/registrationHandler'
+import { SeatedPlayer, AiPlayer, idFromToken } from './common'
 
 const updateFrequencyInMs = 20
 
