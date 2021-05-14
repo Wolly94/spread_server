@@ -26,10 +26,9 @@ test('bubble collision', () => {
         new Cell(0, 0, [100, 100], 50, 50),
         new Cell(1, 1, [400, 500], 50, 50),
     ]
-    const gameState = new SpreadGameImplementation(
-        createMapHelper(cells),
-        basicMechanics,
-    )
+    const gameState = new SpreadGameImplementation(createMapHelper(cells), {
+        mechanics: 'basic',
+    })
     gameState.sendUnits(0, [0], 1)
     gameState.sendUnits(1, [1], 0)
     expect(gameState.bubbles.length).toBe(2)
