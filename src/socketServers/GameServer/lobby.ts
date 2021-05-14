@@ -9,8 +9,8 @@ import {
     ClientLobbyState,
     LobbyStateMessage,
     SetPlayerIdMessage,
+    GameServerMessage,
 } from 'spread_game/dist/messages/inGame/gameServerMessages'
-import GameServerMessage from 'spread_game/dist/messages/replay/serverReplayMessages'
 import { SpreadMap, getPlayerIds } from 'spread_game/dist/spreadGame/map/map'
 import {
     PlayerData,

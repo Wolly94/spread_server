@@ -1,10 +1,10 @@
-import WebSocket from 'ws'
-import ClientMessage from '../shared/clientMessage'
-import FindGameClientMessageData from '../shared/findGame/findGameClientMessages'
+import ClientMessage from 'spread_game/dist/messages/clientMessage'
+import FindGameClientMessageData from 'spread_game/dist/messages/findGame/findGameClientMessages'
 import FindGameServerMessage, {
     OpenGame,
     OpenGamesMessage,
-} from '../shared/findGame/findGameServerMessages'
+} from 'spread_game/dist/messages/findGame/findGameServerMessages'
+import WebSocket from 'ws'
 import GameServerHandler from './gameServerHandler'
 import SocketServer from './socketServer'
 

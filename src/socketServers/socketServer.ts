@@ -1,5 +1,5 @@
+import UrlResponse from 'spread_game/dist/messages/general/urlResponse'
 import WebSocket from 'ws'
-import UrlResponse from '../shared/general/urlResponse'
 
 export const baseUrl = () => {
     const node_env = process.env['NODE_ENV']
