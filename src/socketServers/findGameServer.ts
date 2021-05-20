@@ -5,7 +5,7 @@ import FindGameServerMessage, {
     OpenGamesMessage,
 } from 'spread_game/dist/messages/findGame/findGameServerMessages'
 import WebSocket from 'ws'
-import GameServerHandler from './gameServerHandler'
+import AllGameServerHandler from './gameServerHandler'
 import SocketServer from './socketServer'
 
 class FindGameServer extends SocketServer<
@@ -16,7 +16,7 @@ class FindGameServer extends SocketServer<
         this.sendMessageToClients(this.getUpdateMessage())
     }
     getUpdateMessage() {
-        const openGames = GameServerHandler.getGameServers().map(
+        const openGames = AllGameServerHandler.getGameServers().map(
             (gameServer, index) => {
                 const result: OpenGame = gameServer.toOpenGame()
                 return result

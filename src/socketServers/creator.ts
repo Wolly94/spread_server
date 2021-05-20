@@ -1,9 +1,9 @@
 import FindGameServerHandler from './findGameServerHandler'
 import SpreadGameServer from './GameServer/gameServer'
-import GameServerHandler from './gameServerHandler'
+import AllGameServerHandler from './gameServerHandler'
 
 export const createGameServer = () => {
-    const resp = GameServerHandler.createGameServer()
+    const resp = AllGameServerHandler.createGameServer()
     return resp
 }
 

@@ -12,8 +12,6 @@ import {
 import FindGameServerHandler from '../findGameServerHandler'
 import AllGameServerHandler from '../gameServerHandler'
 import SocketServer from '../socketServer'
-import InGameImplementation, { InGame } from './inGame'
-import LobbyImplementation, { Lobby } from './lobby'
 import WebSocket from 'ws'
 import { GameServerHandler } from 'spread_game/dist/communication/gameServerHandler/GameServerHandler'
 
@@ -28,25 +26,18 @@ class SpreadGameServer extends SocketServer<
     ClientMessage<GameClientMessageData>
 > {
     connectedPlayers: ConnectedPlayer[]
-    state: Lobby | InGame
+    gameHandler: GameServerHandler
 
     // later allow connecting other players and read data like skills accordingly
     constructor(port: number) {
         super(port)
         this.connectedPlayers = []
-
-        const gameHandler = new GameServerHandler()
-
-        const lobby: Lobby = new LobbyImplementation(
-            (token, msg) => this.sendMessageToClientViaToken(token, msg),
-            (msg) => this.sendMessageToClients(msg),
-        )
-        this.state = lobby
+        this.gameHandler = new GameServerHandler()
     }
 
     shutdown() {
-        if (this.state.type === 'ingame') {
-            this.state.stop()
+        if (this.gameHandler.state.type === 'ingame') {
+            this.gameHandler.state.stop()
         }
         this.socket.close()
         console.log('shutdown game at port ' + this.port.toString())
@@ -59,44 +50,11 @@ class SpreadGameServer extends SocketServer<
         }
     }
 
-    lobbyToInGame() {
-        if (this.state.type === 'lobby' && this.state.map !== null) {
-            // maybe clients were created faster than they could be added to the game
-            const inGameState = new InGameImplementation(
-                this.state.map,
-                this.state.gameSettings,
-                this.state.seatedPlayers,
-                (token, msg) => this.sendMessageToClientViaToken(token, msg),
-                (msg) => this.sendMessageToClients(msg),
-            )
-            this.state = inGameState
-            this.state.startGame()
-            FindGameServerHandler.findGameServer?.updateClients()
-        }
-    }
-
     onReceiveMessage(
         client: WebSocket,
         message: ClientMessage<GameClientMessageData>,
-        token: string,
     ) {
-        const clientMessage = message.data
-        if (
-            this.state.type === 'lobby' &&
-            isClientLobbyMessage(clientMessage)
-        ) {
-            if (clientMessage.type === 'startgame') {
-                this.lobbyToInGame()
-                console.log('game started')
-            } else {
-                this.state.onReceiveMessage(message.token, clientMessage)
-            }
-        } else if (
-            this.state.type === 'ingame' &&
-            !isClientLobbyMessage(clientMessage)
-        ) {
-            this.state.onReceiveMessage(message.token, clientMessage)
-        }
+        this.gameHandler.onMessageReceive(message.data, message.token)
     }
 
     onConnect(client: WebSocket, token: string) {
@@ -116,17 +74,17 @@ class SpreadGameServer extends SocketServer<
         } else {
             playerData = this.connectedPlayers[index].playerData
         }
-        if (this.state.type === 'lobby') {
-            this.state.onConnect(token, playerData)
-        } else if (this.state.type === 'ingame') {
-            this.state.onConnect(token, playerData)
-        }
+        this.gameHandler.connectClient(token, playerData, (msg) =>
+            this.sendMessageToClient(client, msg),
+        )
     }
 
     onDisconnect(client: WebSocket, token: string) {
-        if (this.state.type === 'lobby') {
-            this.state.unseatPlayer(token)
+        // TODO move this to gamehandler
+        if (this.gameHandler.state.type === 'lobby') {
+            this.gameHandler.state.unseatPlayer(token)
         }
+        this.gameHandler.disconnectClient(token)
         if (this.socket.clients.size === 0) {
             AllGameServerHandler.shutDown(this.port)
         }
@@ -136,14 +94,18 @@ class SpreadGameServer extends SocketServer<
     // TODO rework
     toOpenGame() {
         const url = this.url
-        const running = this.state.type === 'ingame'
+        const running = this.gameHandler.state.type === 'ingame'
 
         let players: number
         let joinedPlayers: number
-        if (this.state.type === 'lobby' && this.state.map !== null) {
-            const remSeats = this.state.remainingLobbySeats()
-            players = this.state.map.players
-            joinedPlayers = players - remSeats.length
+        if (
+            this.gameHandler.state.type === 'lobby' &&
+            this.gameHandler.state.map !== null
+        ) {
+            const remSeats = 100
+            //const remSeats = this.gameHandler.state.remainingLobbySeats()
+            players = this.gameHandler.state.map.players
+            joinedPlayers = players - remSeats
         } else {
             players = 0
             joinedPlayers = 0
