@@ -10,11 +10,12 @@ import {
     getPlayerData,
 } from '../../registration/registrationHandler'
 import FindGameServerHandler from '../findGameServerHandler'
-import GameServerHandler from '../gameServerHandler'
+import AllGameServerHandler from '../gameServerHandler'
 import SocketServer from '../socketServer'
 import InGameImplementation, { InGame } from './inGame'
 import LobbyImplementation, { Lobby } from './lobby'
 import WebSocket from 'ws'
+import { GameServerHandler } from 'spread_game/dist/communication/gameServerHandler/GameServerHandler'
 
 interface ConnectedPlayer {
     token: string
@@ -33,6 +34,8 @@ class SpreadGameServer extends SocketServer<
     constructor(port: number) {
         super(port)
         this.connectedPlayers = []
+
+        const gameHandler = new GameServerHandler()
 
         const lobby: Lobby = new LobbyImplementation(
             (token, msg) => this.sendMessageToClientViaToken(token, msg),
@@ -125,7 +128,7 @@ class SpreadGameServer extends SocketServer<
             this.state.unseatPlayer(token)
         }
         if (this.socket.clients.size === 0) {
-            GameServerHandler.shutDown(this.port)
+            AllGameServerHandler.shutDown(this.port)
         }
     }
 
